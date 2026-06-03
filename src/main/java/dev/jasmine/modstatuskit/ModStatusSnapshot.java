@@ -26,11 +26,11 @@ public final class ModStatusSnapshot {
         return new ModStatusSnapshot(null, VersionStatus.SERVER_NOT_DETECTED);
     }
 
-    public static ModStatusSnapshot withServerVersion(String serverVersion, VersionStatus status) {
+    static ModStatusSnapshot withServerVersion(String serverVersion, VersionStatus status) {
         if (status != VersionStatus.MATCHED && status != VersionStatus.DIFFERENT) {
             throw new IllegalArgumentException("status must be MATCHED or DIFFERENT when serverVersion is present");
         }
-        String normalized = requireText(serverVersion, "serverVersion");
+        String normalized = ModStatusStrings.requireText(serverVersion, "serverVersion");
         return new ModStatusSnapshot(normalized, status);
     }
 
@@ -50,11 +50,4 @@ public final class ModStatusSnapshot {
         return trimmed.isEmpty() ? null : trimmed;
     }
 
-    private static String requireText(String value, String name) {
-        String normalized = normalize(Objects.requireNonNull(value, name));
-        if (normalized == null) {
-            throw new IllegalArgumentException(name + " must not be blank");
-        }
-        return normalized;
-    }
 }

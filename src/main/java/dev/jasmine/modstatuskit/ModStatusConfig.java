@@ -15,12 +15,12 @@ public final class ModStatusConfig {
     private final ModStatusMessages messages;
 
     private ModStatusConfig(Builder builder) {
-        this.modId = requireText(builder.modId, "modId");
-        this.displayName = requireText(builder.displayName, "displayName");
-        this.clientVersion = requireText(builder.clientVersion, "clientVersion");
-        this.updateUrl = optionalText(builder.updateUrl);
-        this.payloadNamespace = requireText(builder.payloadNamespace, "payloadNamespace");
-        this.payloadPath = requireText(builder.payloadPath, "payloadPath");
+        this.modId = ModStatusStrings.requireText(builder.modId, "modId");
+        this.displayName = ModStatusStrings.requireText(builder.displayName, "displayName");
+        this.clientVersion = ModStatusStrings.requireText(builder.clientVersion, "clientVersion");
+        this.updateUrl = ModStatusStrings.optionalText(builder.updateUrl);
+        this.payloadNamespace = ModStatusStrings.requireText(builder.payloadNamespace, "payloadNamespace");
+        this.payloadPath = ModStatusStrings.requireText(builder.payloadPath, "payloadPath");
         this.messages = builder.messages == null ? ModStatusMessages.defaults() : builder.messages;
     }
 
@@ -105,19 +105,4 @@ public final class ModStatusConfig {
         }
     }
 
-    private static String requireText(String value, String name) {
-        String trimmed = Objects.requireNonNull(value, name).trim();
-        if (trimmed.isEmpty()) {
-            throw new IllegalArgumentException(name + " must not be blank");
-        }
-        return trimmed;
-    }
-
-    private static String optionalText(String value) {
-        if (value == null) {
-            return null;
-        }
-        String trimmed = value.trim();
-        return trimmed.isEmpty() ? null : trimmed;
-    }
 }

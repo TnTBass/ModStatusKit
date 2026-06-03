@@ -23,13 +23,13 @@ public final class ModStatusDisplay {
             StatusTone tone,
             String updateUrl
     ) {
-        this.displayName = requireText(displayName, "displayName");
-        this.clientVersion = requireText(clientVersion, "clientVersion");
-        this.serverVersion = requireText(serverVersion, "serverVersion");
-        this.statusLabel = requireText(statusLabel, "statusLabel");
+        this.displayName = ModStatusStrings.requireText(displayName, "displayName");
+        this.clientVersion = ModStatusStrings.requireText(clientVersion, "clientVersion");
+        this.serverVersion = ModStatusStrings.requireText(serverVersion, "serverVersion");
+        this.statusLabel = ModStatusStrings.requireText(statusLabel, "statusLabel");
         this.helpText = helpText == null ? "" : helpText.trim();
         this.tone = Objects.requireNonNull(tone, "tone");
-        this.updateUrl = optionalText(updateUrl);
+        this.updateUrl = ModStatusStrings.optionalText(updateUrl);
     }
 
     public String displayName() {
@@ -60,19 +60,4 @@ public final class ModStatusDisplay {
         return updateUrl;
     }
 
-    private static String requireText(String value, String name) {
-        String trimmed = Objects.requireNonNull(value, name).trim();
-        if (trimmed.isEmpty()) {
-            throw new IllegalArgumentException(name + " must not be blank");
-        }
-        return trimmed;
-    }
-
-    private static String optionalText(String value) {
-        if (value == null) {
-            return null;
-        }
-        String trimmed = value.trim();
-        return trimmed.isEmpty() ? null : trimmed;
-    }
 }

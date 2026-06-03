@@ -48,12 +48,12 @@ public final class ModStatusMessages {
         private final EnumMap<VersionStatus, String> helpText = new EnumMap<>(VersionStatus.class);
 
         public Builder label(VersionStatus status, String label) {
-            labels.put(Objects.requireNonNull(status, "status"), requireText(label, "label"));
+            labels.put(Objects.requireNonNull(status, "status"), ModStatusStrings.requireText(label, "label"));
             return this;
         }
 
         public Builder help(VersionStatus status, String help) {
-            helpText.put(Objects.requireNonNull(status, "status"), requireText(help, "help"));
+            helpText.put(Objects.requireNonNull(status, "status"), ModStatusStrings.requireText(help, "help"));
             return this;
         }
 
@@ -79,12 +79,5 @@ public final class ModStatusMessages {
             };
         }
 
-        private static String requireText(String value, String name) {
-            String trimmed = Objects.requireNonNull(value, name).trim();
-            if (trimmed.isEmpty()) {
-                throw new IllegalArgumentException(name + " must not be blank");
-            }
-            return trimmed;
-        }
     }
 }

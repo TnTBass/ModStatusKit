@@ -25,7 +25,7 @@ public final class ModStatusKit {
 
     public static ModStatusSnapshot connected(ModStatusConfig config, String serverVersion) {
         Objects.requireNonNull(config, "config");
-        String normalizedServerVersion = requireText(serverVersion, "serverVersion");
+        String normalizedServerVersion = ModStatusStrings.requireText(serverVersion, "serverVersion");
         VersionStatus status = config.clientVersion().equals(normalizedServerVersion)
                 ? VersionStatus.MATCHED
                 : VersionStatus.DIFFERENT;
@@ -51,11 +51,4 @@ public final class ModStatusKit {
         );
     }
 
-    private static String requireText(String value, String name) {
-        String trimmed = Objects.requireNonNull(value, name).trim();
-        if (trimmed.isEmpty()) {
-            throw new IllegalArgumentException(name + " must not be blank");
-        }
-        return trimmed;
-    }
 }

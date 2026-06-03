@@ -7,6 +7,7 @@ public final class ModStatusKitTest {
         testSnapshotAndDisplayModels();
         testStatusApi();
         testCustomMessages();
+        testConnectedRejectsInvalidServerVersions();
         System.out.println("ModStatusKitTest passed");
     }
 
@@ -102,6 +103,14 @@ public final class ModStatusKitTest {
 
         assertEquals("Different versions", display.statusLabel(), "custom different label");
         assertEquals("Different versions may miss or hide new features. Gameplay remains compatible.", display.helpText(), "custom different help");
+        assertEquals(null, display.updateUrl(), "null update url");
+    }
+
+    private static void testConnectedRejectsInvalidServerVersions() {
+        ModStatusConfig config = exampleConfig();
+
+        assertThrows(IllegalArgumentException.class, () -> ModStatusKit.connected(config, ""), "blank server version");
+        assertThrows(NullPointerException.class, () -> ModStatusKit.connected(config, null), "null server version");
     }
 
     private static void assertDisplay(
@@ -119,8 +128,21 @@ public final class ModStatusKitTest {
     }
 
     private static void assertEquals(Object expected, Object actual, String label) {
-        if (!expected.equals(actual)) {
+        if (expected == null ? actual != null : !expected.equals(actual)) {
             throw new AssertionError(label + ": expected [" + expected + "] but got [" + actual + "]");
         }
+    }
+
+    private static void assertThrows(Class<? extends Throwable> expectedType, Runnable action, String label) {
+        try {
+            action.run();
+        } catch (Throwable throwable) {
+            if (expectedType.isInstance(throwable)) {
+                return;
+            }
+            throw new AssertionError(label + ": expected [" + expectedType.getSimpleName() + "] but got ["
+                    + throwable.getClass().getSimpleName() + "]", throwable);
+        }
+        throw new AssertionError(label + ": expected [" + expectedType.getSimpleName() + "] but nothing was thrown");
     }
 }
