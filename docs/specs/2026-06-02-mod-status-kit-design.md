@@ -63,6 +63,8 @@ Exact names can change during implementation planning, but the API shape should 
 
 ModStatusKit should be consumed as source, a local jar, or a shaded dependency and relocated into the consuming mod's internal namespace. This avoids collisions when multiple mods embed different ModStatusKit copies in the same Minecraft process.
 
+Each consuming mod must relocate ModStatusKit under a unique mod-specific package root. Do not relocate multiple consumers to the same shared package such as `dev.jasmine.modstatuskit.shadow`; that would reintroduce classpath collisions when different embedded versions are installed together. A safe pattern is `<consumer.package>.internal.modstatus` or `<consumer.package>.shadow.modstatuskit`.
+
 Recommended relocated package examples:
 
 - `dev.jasmine.carrybabyanimals.internal.modstatus`
@@ -78,8 +80,8 @@ The reusable status model should derive one of these states:
 - `MATCHED`: client and server versions are both known and equal.
 - `DIFFERENT`: client and server versions are both known and not equal.
 - `DISCONNECTED`: the client is not connected to a server or local world.
-- `SERVER_NOT_DETECTED`: connected, but the consuming server mod was not detected.
-- `UNKNOWN`: connected, but server status/version has not been received.
+- `SERVER_NOT_DETECTED`: connected, and the consuming mod's detection window has elapsed without seeing the expected server-side channel or version payload.
+- `UNKNOWN`: connected, but server status/version has not been received yet and detection is still pending.
 
 Display tones:
 
@@ -100,15 +102,17 @@ No semantic version ordering is required for v1. Any unequal known versions are 
 
 ## Connection Lifecycle
 
-The consuming mod should clear the server version state on disconnect. On reconnect, it should start from an unknown or server-not-detected state until capability detection and payload exchange complete.
+The consuming mod should clear the server version state on disconnect. On reconnect, it should start from `UNKNOWN` until capability detection and payload exchange complete or a bounded detection window elapses.
 
 The core library should model state transitions but should not directly subscribe to Minecraft lifecycle events. Consuming mods remain responsible for calling the API at the right moments:
 
 - disconnected before joining a world or server
-- unknown immediately after connecting, before payload information is available
-- server not detected when capability checks show the server-side mod/channel is absent
+- unknown immediately after connecting, before payload information is available and while detection is still pending
+- server not detected when capability checks show the server-side mod/channel is absent, or when the consuming mod's bounded detection window elapses without receiving the expected payload
 - server version received when a valid version payload arrives
 - disconnected again after leaving the world/server
+
+The core library should not choose the detection timeout. Each consuming mod should pick a small, documented bound that fits its connection flow, then pass the resulting state into ModStatusKit.
 
 ## Payload Model
 
@@ -120,13 +124,13 @@ Each consuming mod owns its own payload channel. Examples:
 
 The payload should be small. For v1, a server version string is enough. If future compatibility requires it, the payload can include a protocol/status version and display version separately.
 
-Networking must be optional and capability-gated. A server should only send a custom payload when the client can receive that channel. Vanilla or unmodded clients must receive no custom payloads they cannot understand.
+Networking must be optional and capability-gated. The recommended v1 direction is server-to-client version reporting: the consuming client registers its own receiver for its mod-specific channel, and the consuming server sends only after Fabric's negotiated receiver/channel availability check, such as `ServerPlayNetworking.canSend(player, channel)`, confirms that the client can receive that payload. Vanilla or unmodded clients must receive no custom payloads they cannot understand.
 
 Because each mod owns a separate channel and embeds a relocated copy of the library, CarryBabyAnimals, SignPort, and MultiGolem can all be installed on the same client/server without sharing mutable status state or colliding on payload IDs.
 
 ## ModMenu and Status Section Model
 
-ModStatusKit should not depend on ModMenu in the core. It should return a display model with:
+ModStatusKit should not depend on ModMenu in the core. ModMenu integration is implemented by each consuming mod; ModStatusKit core provides no ModMenu dependency or adapter. It should return a display model with:
 
 - display name
 - client version text
