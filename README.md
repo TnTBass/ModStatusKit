@@ -51,3 +51,39 @@ Example relocated package names:
 - `dev.jasmine.multigolem.internal.modstatus`
 
 The v1 goal is simple, repeatable, usable API calls from each consuming mod, not a mandatory published dependency or a standalone player-installed mod.
+
+## Java Core API
+
+The v1 core is plain Java. A consuming mod creates a config, updates status from its own lifecycle/networking code, and asks ModStatusKit for display data.
+
+```java
+ModStatusConfig config = ModStatusConfig.builder()
+    .modId("examplemod")
+    .displayName("Example Mod")
+    .clientVersion("1.2.3")
+    .payloadChannel("examplemod", "server_version")
+    .messages(ModStatusMessages.defaults())
+    .build();
+
+ModStatusSnapshot snapshot = ModStatusKit.connected(config, "1.2.3");
+ModStatusDisplay display = ModStatusKit.display(config, snapshot);
+```
+
+For custom mismatch wording:
+
+```java
+ModStatusMessages messages = ModStatusMessages.builder()
+    .label(VersionStatus.DIFFERENT, "Different versions")
+    .help(VersionStatus.DIFFERENT, "Different versions may miss or hide new features. Gameplay remains compatible.")
+    .build();
+```
+
+The consuming mod owns Fabric lifecycle hooks, capability-gated networking, and ModMenu rendering.
+
+## Testing
+
+Run the dependency-free Java core tests:
+
+```powershell
+.\scripts\test-java-core.ps1
+```
