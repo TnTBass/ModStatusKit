@@ -1,4 +1,4 @@
-package dev.jasmine.modstatuskit;
+package cloud.explosive.modstatuskit;
 
 import java.util.Objects;
 

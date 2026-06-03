@@ -4,7 +4,7 @@
 
 **Goal:** Build the first tiny, dependency-free Java core for ModStatusKit with pure status comparison, immutable display/config models, and executable tests.
 
-**Architecture:** The v1 core is plain Java under `dev.jasmine.modstatuskit` with no Fabric, Minecraft, ModMenu, Gradle, or external test dependency. Consuming mods provide config and lifecycle inputs, then call simple static API methods to get immutable snapshots and display data. Tests compile and run with `javac`/`java` through a small PowerShell script.
+**Architecture:** The v1 core is plain Java under `cloud.explosive.modstatuskit` with no Fabric, Minecraft, ModMenu, Gradle, or external test dependency. Consuming mods provide config and lifecycle inputs, then call simple static API methods to get immutable snapshots and display data. Tests compile and run with `javac`/`java` through a small PowerShell script.
 
 **Tech Stack:** Java 17+, PowerShell, `javac`, `java`, Git.
 
@@ -18,21 +18,21 @@ It does not implement Fabric networking, ModMenu rendering, Gradle publishing, s
 
 ## File Structure
 
-- Create `src/main/java/dev/jasmine/modstatuskit/StatusTone.java`
+- Create `src/main/java/cloud/explosive/modstatuskit/StatusTone.java`
   - Defines display tone values: `GREEN`, `ORANGE`, `GRAY`.
-- Create `src/main/java/dev/jasmine/modstatuskit/VersionStatus.java`
+- Create `src/main/java/cloud/explosive/modstatuskit/VersionStatus.java`
   - Defines status values: `MATCHED`, `DIFFERENT`, `DISCONNECTED`, `SERVER_NOT_DETECTED`, `UNKNOWN`.
-- Create `src/main/java/dev/jasmine/modstatuskit/ModStatusMessages.java`
+- Create `src/main/java/cloud/explosive/modstatuskit/ModStatusMessages.java`
   - Immutable message set with defaults and override factory methods.
-- Create `src/main/java/dev/jasmine/modstatuskit/ModStatusConfig.java`
+- Create `src/main/java/cloud/explosive/modstatuskit/ModStatusConfig.java`
   - Immutable consuming-mod configuration plus builder validation.
-- Create `src/main/java/dev/jasmine/modstatuskit/ModStatusSnapshot.java`
+- Create `src/main/java/cloud/explosive/modstatuskit/ModStatusSnapshot.java`
   - Immutable lifecycle/status snapshot containing status and optional server version.
-- Create `src/main/java/dev/jasmine/modstatuskit/ModStatusDisplay.java`
+- Create `src/main/java/cloud/explosive/modstatuskit/ModStatusDisplay.java`
   - Immutable display model for consuming UI code.
-- Create `src/main/java/dev/jasmine/modstatuskit/ModStatusKit.java`
+- Create `src/main/java/cloud/explosive/modstatuskit/ModStatusKit.java`
   - Small static facade for creating snapshots and display models.
-- Create `src/test/java/dev/jasmine/modstatuskit/ModStatusKitTest.java`
+- Create `src/test/java/cloud/explosive/modstatuskit/ModStatusKitTest.java`
   - Dependency-free test runner with assertions in `main`.
 - Create `scripts/test-java-core.ps1`
   - Compiles main/test Java sources into `build/test-classes` and runs the test runner.
@@ -42,25 +42,25 @@ It does not implement Fabric networking, ModMenu rendering, Gradle publishing, s
 ## Task 1: Core Status Enums
 
 **Files:**
-- Create: `src/main/java/dev/jasmine/modstatuskit/StatusTone.java`
-- Create: `src/main/java/dev/jasmine/modstatuskit/VersionStatus.java`
+- Create: `src/main/java/cloud/explosive/modstatuskit/StatusTone.java`
+- Create: `src/main/java/cloud/explosive/modstatuskit/VersionStatus.java`
 
 - [ ] **Step 1: Create the package directory**
 
 Run:
 
 ```powershell
-New-Item -ItemType Directory -Path src\main\java\dev\jasmine\modstatuskit -Force
+New-Item -ItemType Directory -Path src\main\java\cloud\explosive\modstatuskit -Force
 ```
 
-Expected: directory exists at `src/main/java/dev/jasmine/modstatuskit`.
+Expected: directory exists at `src/main/java/cloud/explosive/modstatuskit`.
 
 - [ ] **Step 2: Create `StatusTone.java`**
 
 Write:
 
 ```java
-package dev.jasmine.modstatuskit;
+package cloud.explosive.modstatuskit;
 
 /**
  * UI tone a consuming mod can map to its own colors or widgets.
@@ -77,7 +77,7 @@ public enum StatusTone {
 Write:
 
 ```java
-package dev.jasmine.modstatuskit;
+package cloud.explosive.modstatuskit;
 
 /**
  * Informational client/server version status.
@@ -104,7 +104,7 @@ public enum VersionStatus {
 Run:
 
 ```powershell
-javac -d build\plan-check src\main\java\dev\jasmine\modstatuskit\StatusTone.java src\main\java\dev\jasmine\modstatuskit\VersionStatus.java
+javac -d build\plan-check src\main\java\cloud\explosive\modstatuskit\StatusTone.java src\main\java\cloud\explosive\modstatuskit\VersionStatus.java
 ```
 
 Expected: exit code `0`.
@@ -114,16 +114,16 @@ Expected: exit code `0`.
 Run:
 
 ```powershell
-git add src/main/java/dev/jasmine/modstatuskit/StatusTone.java src/main/java/dev/jasmine/modstatuskit/VersionStatus.java
+git add src/main/java/cloud/explosive/modstatuskit/StatusTone.java src/main/java/cloud/explosive/modstatuskit/VersionStatus.java
 git commit -m "Add ModStatusKit status enums"
 ```
 
 ## Task 2: Message and Config Models
 
 **Files:**
-- Create: `src/main/java/dev/jasmine/modstatuskit/ModStatusMessages.java`
-- Create: `src/main/java/dev/jasmine/modstatuskit/ModStatusConfig.java`
-- Test: `src/test/java/dev/jasmine/modstatuskit/ModStatusKitTest.java`
+- Create: `src/main/java/cloud/explosive/modstatuskit/ModStatusMessages.java`
+- Create: `src/main/java/cloud/explosive/modstatuskit/ModStatusConfig.java`
+- Test: `src/test/java/cloud/explosive/modstatuskit/ModStatusKitTest.java`
 - Create: `scripts/test-java-core.ps1`
 
 - [ ] **Step 1: Create the test and script directories**
@@ -131,7 +131,7 @@ git commit -m "Add ModStatusKit status enums"
 Run:
 
 ```powershell
-New-Item -ItemType Directory -Path src\test\java\dev\jasmine\modstatuskit -Force
+New-Item -ItemType Directory -Path src\test\java\cloud\explosive\modstatuskit -Force
 New-Item -ItemType Directory -Path scripts -Force
 ```
 
@@ -139,10 +139,10 @@ Expected: both directories exist.
 
 - [ ] **Step 2: Create the first failing tests**
 
-Write `src/test/java/dev/jasmine/modstatuskit/ModStatusKitTest.java`:
+Write `src/test/java/cloud/explosive/modstatuskit/ModStatusKitTest.java`:
 
 ```java
-package dev.jasmine.modstatuskit;
+package cloud.explosive.modstatuskit;
 
 public final class ModStatusKitTest {
     public static void main(String[] args) {
@@ -206,7 +206,7 @@ $mainSources = Get-ChildItem -Path "src\main\java" -Recurse -Filter "*.java" | F
 $testSources = Get-ChildItem -Path "src\test\java" -Recurse -Filter "*.java" | ForEach-Object { $_.FullName }
 
 javac -d $buildDir @mainSources @testSources
-java -cp $buildDir dev.jasmine.modstatuskit.ModStatusKitTest
+java -cp $buildDir cloud.explosive.modstatuskit.ModStatusKitTest
 ```
 
 - [ ] **Step 4: Run tests to verify they fail**
@@ -224,7 +224,7 @@ Expected: compile failure mentioning missing symbols such as `ModStatusMessages`
 Write:
 
 ```java
-package dev.jasmine.modstatuskit;
+package cloud.explosive.modstatuskit;
 
 import java.util.EnumMap;
 import java.util.Map;
@@ -321,7 +321,7 @@ public final class ModStatusMessages {
 Write:
 
 ```java
-package dev.jasmine.modstatuskit;
+package cloud.explosive.modstatuskit;
 
 import java.util.Objects;
 
@@ -465,16 +465,16 @@ ModStatusKitTest passed
 Run:
 
 ```powershell
-git add scripts/test-java-core.ps1 src/main/java/dev/jasmine/modstatuskit/ModStatusMessages.java src/main/java/dev/jasmine/modstatuskit/ModStatusConfig.java src/test/java/dev/jasmine/modstatuskit/ModStatusKitTest.java
+git add scripts/test-java-core.ps1 src/main/java/cloud/explosive/modstatuskit/ModStatusMessages.java src/main/java/cloud/explosive/modstatuskit/ModStatusConfig.java src/test/java/cloud/explosive/modstatuskit/ModStatusKitTest.java
 git commit -m "Add ModStatusKit config and message models"
 ```
 
 ## Task 3: Snapshot and Display Models
 
 **Files:**
-- Create: `src/main/java/dev/jasmine/modstatuskit/ModStatusSnapshot.java`
-- Create: `src/main/java/dev/jasmine/modstatuskit/ModStatusDisplay.java`
-- Modify: `src/test/java/dev/jasmine/modstatuskit/ModStatusKitTest.java`
+- Create: `src/main/java/cloud/explosive/modstatuskit/ModStatusSnapshot.java`
+- Create: `src/main/java/cloud/explosive/modstatuskit/ModStatusDisplay.java`
+- Modify: `src/test/java/cloud/explosive/modstatuskit/ModStatusKitTest.java`
 
 - [ ] **Step 1: Add failing snapshot/display tests**
 
@@ -532,7 +532,7 @@ Expected: compile failure mentioning missing `ModStatusSnapshot` and `ModStatusD
 Write:
 
 ```java
-package dev.jasmine.modstatuskit;
+package cloud.explosive.modstatuskit;
 
 import java.util.Objects;
 
@@ -599,7 +599,7 @@ public final class ModStatusSnapshot {
 Write:
 
 ```java
-package dev.jasmine.modstatuskit;
+package cloud.explosive.modstatuskit;
 
 import java.util.Objects;
 
@@ -698,15 +698,15 @@ ModStatusKitTest passed
 Run:
 
 ```powershell
-git add src/main/java/dev/jasmine/modstatuskit/ModStatusSnapshot.java src/main/java/dev/jasmine/modstatuskit/ModStatusDisplay.java src/test/java/dev/jasmine/modstatuskit/ModStatusKitTest.java
+git add src/main/java/cloud/explosive/modstatuskit/ModStatusSnapshot.java src/main/java/cloud/explosive/modstatuskit/ModStatusDisplay.java src/test/java/cloud/explosive/modstatuskit/ModStatusKitTest.java
 git commit -m "Add ModStatusKit snapshot and display models"
 ```
 
 ## Task 4: Static API Facade
 
 **Files:**
-- Create: `src/main/java/dev/jasmine/modstatuskit/ModStatusKit.java`
-- Modify: `src/test/java/dev/jasmine/modstatuskit/ModStatusKitTest.java`
+- Create: `src/main/java/cloud/explosive/modstatuskit/ModStatusKit.java`
+- Modify: `src/test/java/cloud/explosive/modstatuskit/ModStatusKitTest.java`
 
 - [ ] **Step 1: Add failing API tests**
 
@@ -800,7 +800,7 @@ Expected: compile failure mentioning missing `ModStatusKit`.
 Write:
 
 ```java
-package dev.jasmine.modstatuskit;
+package cloud.explosive.modstatuskit;
 
 import java.util.Objects;
 
@@ -882,7 +882,7 @@ ModStatusKitTest passed
 Run:
 
 ```powershell
-git add src/main/java/dev/jasmine/modstatuskit/ModStatusKit.java src/test/java/dev/jasmine/modstatuskit/ModStatusKitTest.java
+git add src/main/java/cloud/explosive/modstatuskit/ModStatusKit.java src/test/java/cloud/explosive/modstatuskit/ModStatusKitTest.java
 git commit -m "Add ModStatusKit core API"
 ```
 
@@ -975,8 +975,8 @@ git commit -m "Document ModStatusKit Java core usage"
 - Review scope after implementation:
   - `README.md`
   - `scripts/test-java-core.ps1`
-  - `src/main/java/dev/jasmine/modstatuskit/*.java`
-  - `src/test/java/dev/jasmine/modstatuskit/ModStatusKitTest.java`
+  - `src/main/java/cloud/explosive/modstatuskit/*.java`
+  - `src/test/java/cloud/explosive/modstatuskit/ModStatusKitTest.java`
 
 - [ ] **Step 1: Check final repo state**
 

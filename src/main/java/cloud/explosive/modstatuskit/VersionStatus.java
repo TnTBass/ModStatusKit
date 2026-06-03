@@ -1,4 +1,4 @@
-package dev.jasmine.modstatuskit;
+package cloud.explosive.modstatuskit;
 
 /**
  * Informational client/server version status.

@@ -1,4 +1,4 @@
-package dev.jasmine.modstatuskit;
+package cloud.explosive.modstatuskit;
 
 public final class ModStatusKitTest {
     public static void main(String[] args) {

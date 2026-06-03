@@ -13,8 +13,8 @@
 ### Task 1: Client Status State Holder
 
 **Files:**
-- Create: `src/main/java/dev/jasmine/modstatuskit/ModStatusClientState.java`
-- Modify: `src/test/java/dev/jasmine/modstatuskit/ModStatusKitTest.java`
+- Create: `src/main/java/cloud/explosive/modstatuskit/ModStatusClientState.java`
+- Modify: `src/test/java/cloud/explosive/modstatuskit/ModStatusKitTest.java`
 
 - [ ] **Step 1: Write the failing test**
 
@@ -80,8 +80,8 @@ Expected: `ModStatusKitTest passed`.
 ### Task 2: Version Payload Helpers
 
 **Files:**
-- Create: `src/main/java/dev/jasmine/modstatuskit/ModStatusVersionPayload.java`
-- Modify: `src/test/java/dev/jasmine/modstatuskit/ModStatusKitTest.java`
+- Create: `src/main/java/cloud/explosive/modstatuskit/ModStatusVersionPayload.java`
+- Modify: `src/test/java/cloud/explosive/modstatuskit/ModStatusKitTest.java`
 
 - [ ] **Step 1: Write the failing test**
 
@@ -118,8 +118,8 @@ Expected: `ModStatusKitTest passed`.
 ### Task 3: Capability-Gated Send Delegation
 
 **Files:**
-- Modify: `src/main/java/dev/jasmine/modstatuskit/ModStatusVersionPayload.java`
-- Modify: `src/test/java/dev/jasmine/modstatuskit/ModStatusKitTest.java`
+- Modify: `src/main/java/cloud/explosive/modstatuskit/ModStatusVersionPayload.java`
+- Modify: `src/test/java/cloud/explosive/modstatuskit/ModStatusKitTest.java`
 
 - [ ] **Step 1: Write the failing test**
 

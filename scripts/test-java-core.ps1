@@ -14,7 +14,7 @@ if ($LASTEXITCODE -ne 0) {
     exit $LASTEXITCODE
 }
 
-& java -cp $buildDir dev.jasmine.modstatuskit.ModStatusKitTest
+& java -cp $buildDir cloud.explosive.modstatuskit.ModStatusKitTest
 if ($LASTEXITCODE -ne 0) {
     exit $LASTEXITCODE
 }

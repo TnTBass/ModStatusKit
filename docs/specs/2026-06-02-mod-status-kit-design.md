@@ -85,7 +85,7 @@ Recommended relocated package examples:
 - `cloud.explosive.signport.internal.modstatus`
 - `cloud.explosive.multigolem.internal.modstatus`
 
-The core package in this repository can use a neutral namespace such as `dev.jasmine.modstatuskit`. Build documentation should explain that consuming mods should relocate it under their own package root before shipping.
+The core package in this repository can use a neutral namespace such as `cloud.explosive.modstatuskit`. Build documentation should explain that consuming mods should relocate it under their own package root before shipping.
 
 ## Version Comparison States
 
@@ -287,16 +287,16 @@ The initial repository should contain:
 
 After this design is approved, the implementation plan should add a tiny Java core scaffold with tests. A likely source shape is:
 
-- `src/main/java/dev/jasmine/modstatuskit/ModStatusKit.java`
-- `src/main/java/dev/jasmine/modstatuskit/ModStatusConfig.java`
-- `src/main/java/dev/jasmine/modstatuskit/ModStatusMessages.java`
-- `src/main/java/dev/jasmine/modstatuskit/ModStatusSnapshot.java`
-- `src/main/java/dev/jasmine/modstatuskit/ModStatusDisplay.java`
-- `src/main/java/dev/jasmine/modstatuskit/ModStatusClientState.java`
-- `src/main/java/dev/jasmine/modstatuskit/ModStatusVersionPayload.java`
-- `src/main/java/dev/jasmine/modstatuskit/VersionStatus.java`
-- `src/main/java/dev/jasmine/modstatuskit/StatusTone.java`
-- `src/test/java/dev/jasmine/modstatuskit/ModStatusKitTest.java`
+- `src/main/java/cloud/explosive/modstatuskit/ModStatusKit.java`
+- `src/main/java/cloud/explosive/modstatuskit/ModStatusConfig.java`
+- `src/main/java/cloud/explosive/modstatuskit/ModStatusMessages.java`
+- `src/main/java/cloud/explosive/modstatuskit/ModStatusSnapshot.java`
+- `src/main/java/cloud/explosive/modstatuskit/ModStatusDisplay.java`
+- `src/main/java/cloud/explosive/modstatuskit/ModStatusClientState.java`
+- `src/main/java/cloud/explosive/modstatuskit/ModStatusVersionPayload.java`
+- `src/main/java/cloud/explosive/modstatuskit/VersionStatus.java`
+- `src/main/java/cloud/explosive/modstatuskit/StatusTone.java`
+- `src/test/java/cloud/explosive/modstatuskit/ModStatusKitTest.java`
 
 The scaffold should avoid Fabric dependencies. Optional integration helpers should remain dependency-free by accepting consuming-mod callbacks instead of importing Fabric classes.
 

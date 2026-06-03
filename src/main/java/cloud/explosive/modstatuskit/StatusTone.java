@@ -1,4 +1,4 @@
-package dev.jasmine.modstatuskit;
+package cloud.explosive.modstatuskit;
 
 /**
  * UI tone a consuming mod can map to its own colors or widgets.
