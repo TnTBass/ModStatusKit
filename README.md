@@ -6,11 +6,13 @@ It is intended to be embedded and relocated into each consuming mod jar.
 
 ## Intended Use
 
-A consuming mod owns the Minecraft integration layer and uses ModStatusKit only as a plain Java status/display model. The consuming mod is responsible for:
+A consuming mod provides ModStatusKit with its own identity, versions, payload channel, display copy, and policy. ModStatusKit provides a raw status/display model plus dependency-free helpers that the consuming mod can call from its own Fabric lifecycle and networking callbacks.
 
-- Fabric networking registration and receiver/send logic
-- ModMenu or config-screen rendering
-- client/server lifecycle hooks
+The consuming mod is responsible for:
+
+- registering Fabric callbacks and receivers in its own entrypoints
+- rendering `ModStatusDisplay` in its own UI, if it wants a UI
+- choosing any mismatch-enforcement policy and clear disconnect reason text
 - shading and relocating ModStatusKit into the shipped mod jar
 
 ModStatusKit does not depend on Minecraft, Fabric API, or ModMenu.
@@ -43,7 +45,7 @@ Use a channel namespace owned by the consuming mod, normally the mod id. Use a p
 
 ## Update Status
 
-The consuming mod keeps the current `ModStatusSnapshot` in its own client state and updates it from its own lifecycle/networking callbacks:
+For direct core use, the consuming mod can keep a `ModStatusSnapshot` and update it from its own lifecycle/networking callbacks:
 
 ```java
 ModStatusSnapshot snapshot = ModStatusKit.disconnected();
@@ -57,6 +59,24 @@ Use the helper that matches the current connection state:
 - `ModStatusKit.connected(config, serverVersion)` after receiving the consuming mod's server version.
 
 `connected(config, serverVersion)` compares the server version to `config.clientVersion()` and returns either `MATCHED` or `DIFFERENT`.
+
+For repeated client integration code, use `ModStatusClientState` as the small state holder:
+
+```java
+ModStatusClientState status = ModStatusClientState.create(config);
+
+status.unknown();                // called from the consuming mod's client join callback
+status.connected("1.2.3");       // called after decoding the server version payload
+status.disconnected();           // called from the consuming mod's disconnect callback
+
+ModStatusDisplay display = status.display();
+```
+
+If the consuming mod uses a bounded detection window, it can move from `UNKNOWN` to `SERVER_NOT_DETECTED` only when the state is still unknown:
+
+```java
+status.markServerNotDetectedIfUnknown();
+```
 
 ## Render Display Data
 
@@ -121,7 +141,22 @@ Networking is optional and capability-gated. Each consuming mod owns its own pay
 - `signport:server_version`
 - `multigolem:server_version`
 
-The library core should not hardcode these mods or depend on Minecraft classes. Fabric networking belongs in thin consuming-mod integration code.
+The library core should not hardcode these mods or depend on Minecraft classes. Fabric callback registration belongs in thin consuming-mod integration code, while ModStatusKit can handle the repeatable payload mechanics:
+
+```java
+byte[] payload = ModStatusVersionPayload.encodeServerVersion(config.clientVersion());
+String serverVersion = ModStatusVersionPayload.decodeServerVersion(payload);
+```
+
+On the server side, a consuming mod can delegate capability-gated sending without making ModStatusKit depend on Fabric classes:
+
+```java
+ModStatusVersionPayload.sendServerVersionIfSupported(
+    config,
+    channel -> canSendPlayerPayload(player, channel),
+    (channel, payload) -> sendPlayerPayload(player, channel, payload)
+);
+```
 
 For server-to-client version reporting, send only after Fabric's negotiated receiver/channel availability check shows that the client can receive the payload. For example, a consuming server can use its own equivalent of `ServerPlayNetworking.canSend(player, channel)` before sending. Vanilla or unmodded clients must receive no custom payloads they cannot understand.
 
@@ -146,7 +181,7 @@ The v1 goal is simple, repeatable, usable API calls from each consuming mod, not
 - Do not make ModStatusKit itself gate gameplay, kick players, or disconnect clients.
 - Do not hide a consuming mod's own mismatch-enforcement policy; if the consuming mod chooses to enforce matching versions, document that behavior in the consuming mod.
 - Do not send custom payloads to vanilla or unmodded clients.
-- Do not make the ModStatusKit core own Fabric networking, ModMenu rendering, or lifecycle hooks.
+- Do not make ModStatusKit register Fabric callbacks, ModMenu screens, or lifecycle hooks automatically.
 
 ## Minimal End-To-End Example
 

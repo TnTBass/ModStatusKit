@@ -6,6 +6,10 @@ public final class ModStatusKitTest {
         testConfigBuilder();
         testSnapshotAndDisplayModels();
         testStatusApi();
+        testClientStateTransitions();
+        testClientStateSnapshotFieldIsVolatile();
+        testVersionPayloadHelpers();
+        testVersionPayloadSendIfSupported();
         testCustomMessages();
         testConnectedRejectsInvalidServerVersions();
         System.out.println("ModStatusKitTest passed");
@@ -86,6 +90,71 @@ public final class ModStatusKitTest {
         assertDisplay(config, ModStatusKit.connected(config, "1.2.4"), VersionStatus.DIFFERENT, "1.2.4", StatusTone.ORANGE);
     }
 
+    private static void testClientStateTransitions() {
+        ModStatusConfig config = exampleConfig();
+        ModStatusClientState state = ModStatusClientState.create(config);
+
+        assertEquals(VersionStatus.DISCONNECTED, state.snapshot().status(), "initial client state");
+        assertEquals("Unknown", state.display().serverVersion(), "initial display server version");
+
+        state.unknown();
+        assertEquals(VersionStatus.UNKNOWN, state.snapshot().status(), "unknown client state");
+
+        assertEquals(true, state.markServerNotDetectedIfUnknown(), "mark server not detected from unknown");
+        assertEquals(VersionStatus.SERVER_NOT_DETECTED, state.snapshot().status(), "server not detected state");
+        assertEquals(false, state.markServerNotDetectedIfUnknown(), "server not detected unchanged");
+
+        state.unknown();
+        state.serverNotDetected();
+        assertEquals(VersionStatus.SERVER_NOT_DETECTED, state.snapshot().status(), "direct server not detected state");
+
+        state.connected("1.2.3");
+        assertEquals(VersionStatus.MATCHED, state.snapshot().status(), "matched connected state");
+        assertEquals("1.2.3", state.display().serverVersion(), "matched display server version");
+
+        state.connected("1.2.4");
+        assertEquals(VersionStatus.DIFFERENT, state.snapshot().status(), "different connected state");
+
+        state.disconnected();
+        assertEquals(VersionStatus.DISCONNECTED, state.snapshot().status(), "disconnected client state");
+    }
+
+    private static void testClientStateSnapshotFieldIsVolatile() {
+        try {
+            int modifiers = ModStatusClientState.class.getDeclaredField("snapshot").getModifiers();
+            assertEquals(true, java.lang.reflect.Modifier.isVolatile(modifiers), "snapshot field volatile");
+        } catch (NoSuchFieldException exception) {
+            throw new AssertionError("snapshot field exists", exception);
+        }
+    }
+
+    private static void testVersionPayloadHelpers() {
+        byte[] payload = ModStatusVersionPayload.encodeServerVersion(" 1.2.3 ");
+        assertEquals("1.2.3", ModStatusVersionPayload.decodeServerVersion(payload), "decoded server version");
+
+        assertThrows(IllegalArgumentException.class, () -> ModStatusVersionPayload.encodeServerVersion(""), "blank encode");
+        assertThrows(NullPointerException.class, () -> ModStatusVersionPayload.encodeServerVersion(null), "null encode");
+        assertThrows(IllegalArgumentException.class, () -> ModStatusVersionPayload.decodeServerVersion(new byte[0]), "empty decode");
+        assertThrows(IllegalArgumentException.class, () -> ModStatusVersionPayload.decodeServerVersion(new byte[]{0x20}), "whitespace decode");
+        assertThrows(NullPointerException.class, () -> ModStatusVersionPayload.decodeServerVersion(null), "null decode");
+    }
+
+    private static void testVersionPayloadSendIfSupported() {
+        ModStatusConfig config = exampleConfig();
+        RecordingPayloadSender sender = new RecordingPayloadSender();
+
+        boolean sent = ModStatusVersionPayload.sendServerVersionIfSupported(config, channel -> true, sender);
+        assertEquals(true, sent, "send supported result");
+        assertEquals("examplemod:server_version", sender.channel, "sent channel");
+        assertEquals("1.2.3", ModStatusVersionPayload.decodeServerVersion(sender.payload), "sent payload");
+
+        sender = new RecordingPayloadSender();
+        sent = ModStatusVersionPayload.sendServerVersionIfSupported(config, channel -> false, sender);
+        assertEquals(false, sent, "send unsupported result");
+        assertEquals(null, sender.channel, "unsupported channel");
+        assertEquals(null, sender.payload, "unsupported payload");
+    }
+
     private static void testCustomMessages() {
         ModStatusMessages messages = ModStatusMessages.builder()
                 .label(VersionStatus.DIFFERENT, "Different versions")
@@ -144,5 +213,16 @@ public final class ModStatusKitTest {
                     + throwable.getClass().getSimpleName() + "]", throwable);
         }
         throw new AssertionError(label + ": expected [" + expectedType.getSimpleName() + "] but nothing was thrown");
+    }
+
+    private static final class RecordingPayloadSender implements ModStatusVersionPayload.PayloadSender {
+        private String channel;
+        private byte[] payload;
+
+        @Override
+        public void send(String channel, byte[] payload) {
+            this.channel = channel;
+            this.payload = payload;
+        }
     }
 }
