@@ -5,6 +5,8 @@ public final class ModStatusKitTest {
         testDefaultMessages();
         testConfigBuilder();
         testSnapshotAndDisplayModels();
+        testStatusApi();
+        testCustomMessages();
         System.out.println("ModStatusKitTest passed");
     }
 
@@ -60,6 +62,60 @@ public final class ModStatusKitTest {
         assertEquals("Client and server versions match.", display.helpText(), "display help text");
         assertEquals(StatusTone.GREEN, display.tone(), "display tone");
         assertEquals("https://example.invalid/examplemod", display.updateUrl(), "display update url");
+    }
+
+    private static ModStatusConfig exampleConfig() {
+        return ModStatusConfig.builder()
+                .modId("examplemod")
+                .displayName("Example Mod")
+                .clientVersion("1.2.3")
+                .payloadChannel("examplemod", "server_version")
+                .updateUrl("https://example.invalid/examplemod")
+                .messages(ModStatusMessages.defaults())
+                .build();
+    }
+
+    private static void testStatusApi() {
+        ModStatusConfig config = exampleConfig();
+
+        assertDisplay(config, ModStatusKit.disconnected(), VersionStatus.DISCONNECTED, "Unknown", StatusTone.GRAY);
+        assertDisplay(config, ModStatusKit.unknown(), VersionStatus.UNKNOWN, "Unknown", StatusTone.GRAY);
+        assertDisplay(config, ModStatusKit.serverNotDetected(), VersionStatus.SERVER_NOT_DETECTED, "Unknown", StatusTone.GRAY);
+        assertDisplay(config, ModStatusKit.connected(config, "1.2.3"), VersionStatus.MATCHED, "1.2.3", StatusTone.GREEN);
+        assertDisplay(config, ModStatusKit.connected(config, "1.2.4"), VersionStatus.DIFFERENT, "1.2.4", StatusTone.ORANGE);
+    }
+
+    private static void testCustomMessages() {
+        ModStatusMessages messages = ModStatusMessages.builder()
+                .label(VersionStatus.DIFFERENT, "Different versions")
+                .help(VersionStatus.DIFFERENT, "Different versions may miss or hide new features. Gameplay remains compatible.")
+                .build();
+        ModStatusConfig config = ModStatusConfig.builder()
+                .modId("carrybabyanimals")
+                .displayName("Carry Baby Animals")
+                .clientVersion("0.1.3")
+                .payloadChannel("carrybabyanimals", "server_version")
+                .messages(messages)
+                .build();
+
+        ModStatusDisplay display = ModStatusKit.display(config, ModStatusKit.connected(config, "0.1.4"));
+
+        assertEquals("Different versions", display.statusLabel(), "custom different label");
+        assertEquals("Different versions may miss or hide new features. Gameplay remains compatible.", display.helpText(), "custom different help");
+    }
+
+    private static void assertDisplay(
+            ModStatusConfig config,
+            ModStatusSnapshot snapshot,
+            VersionStatus expectedStatus,
+            String expectedServerVersion,
+            StatusTone expectedTone
+    ) {
+        ModStatusDisplay display = ModStatusKit.display(config, snapshot);
+        assertEquals(expectedStatus.tone(), display.tone(), "status tone from enum");
+        assertEquals(expectedTone, display.tone(), "display tone");
+        assertEquals(expectedServerVersion, display.serverVersion(), "display server version");
+        assertEquals(config.messages().labelFor(expectedStatus), display.statusLabel(), "display status label");
     }
 
     private static void assertEquals(Object expected, Object actual, String label) {
