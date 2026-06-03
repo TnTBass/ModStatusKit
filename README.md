@@ -205,3 +205,9 @@ Run the dependency-free Java core tests:
 ```powershell
 .\scripts\test-java-core.ps1
 ```
+
+## Versioning
+
+The current release version is tracked in `VERSION`.
+
+Every release pull request must increment `VERSION`. Start from `0.1.0` and bump intentionally for each release.
