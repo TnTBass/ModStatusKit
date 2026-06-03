@@ -172,8 +172,6 @@ Example relocated package names:
 
 Each consuming mod should choose its own unique internal package root. Do not relocate multiple consuming mods to a shared package such as `cloud.explosive.modstatuskit.shadow`; different embedded versions would collide in the same Minecraft process.
 
-The v1 goal is simple, repeatable, usable API calls from each consuming mod, not a mandatory published dependency or a standalone player-installed mod.
-
 ## What Not To Do
 
 - Do not require players to install ModStatusKit as a standalone mod.
@@ -205,9 +203,3 @@ Run the dependency-free Java core tests:
 ```powershell
 .\scripts\test-java-core.ps1
 ```
-
-## Versioning
-
-The current release version is tracked in `VERSION`.
-
-Every release pull request must increment `VERSION`. Start from `0.1.0` and bump intentionally for each release.
