@@ -8,6 +8,8 @@ public final class ModStatusKitTest {
         testStatusApi();
         testClientStateTransitions();
         testClientStateSnapshotFieldIsVolatile();
+        testVersionMetadataParsing();
+        testBuildMetadataStatusAndDisplay();
         testVersionPayloadHelpers();
         testVersionPayloadSendIfSupported();
         testCustomMessages();
@@ -49,6 +51,9 @@ public final class ModStatusKitTest {
         ModStatusSnapshot snapshot = ModStatusSnapshot.withServerVersion("1.2.3", VersionStatus.MATCHED);
         assertEquals("1.2.3", snapshot.serverVersion(), "snapshot server version");
         assertEquals(VersionStatus.MATCHED, snapshot.status(), "snapshot status");
+        assertEquals(null, ModStatusKit.disconnected().serverVersionInfo(), "disconnected version info absent");
+        assertEquals(null, ModStatusKit.unknown().serverVersionInfo(), "unknown version info absent");
+        assertEquals(null, ModStatusKit.serverNotDetected().serverVersionInfo(), "server not detected version info absent");
 
         ModStatusDisplay display = new ModStatusDisplay(
                 "Example Mod",
@@ -128,9 +133,96 @@ public final class ModStatusKitTest {
         }
     }
 
+    private static void testVersionMetadataParsing() {
+        ModStatusVersion plain = ModStatusVersion.of("0.4.0");
+        assertEquals("0.4.0", plain.version(), "plain base version");
+        assertEquals(null, plain.build(), "plain build absent");
+        assertEquals("0.4.0", plain.toPayloadString(), "plain payload string");
+
+        ModStatusVersion inline = ModStatusVersion.of("0.4.0+abc1234");
+        assertEquals("0.4.0", inline.version(), "inline base version");
+        assertEquals("abc1234", inline.build(), "inline build");
+        assertEquals("0.4.0+abc1234", inline.toPayloadString(), "inline payload string");
+
+        ModStatusVersion explicit = ModStatusVersion.of("0.4.0+ignored", "def5678");
+        assertEquals("0.4.0", explicit.version(), "explicit base version");
+        assertEquals("def5678", explicit.build(), "explicit build overrides inline");
+        assertEquals("0.4.0+def5678", explicit.toPayloadString(), "explicit payload string");
+
+        ModStatusVersion unsupported = ModStatusVersion.of("0.4.0-abc1234");
+        assertEquals("0.4.0-abc1234", unsupported.version(), "unsupported format remains version");
+        assertEquals(null, unsupported.build(), "unsupported build absent");
+
+        ModStatusVersion emptyInlineBuild = ModStatusVersion.of("0.4.0+");
+        assertEquals("0.4.0+", emptyInlineBuild.version(), "empty inline build remains version");
+        assertEquals(null, emptyInlineBuild.build(), "empty inline build absent");
+
+        assertThrows(IllegalArgumentException.class, () -> ModStatusVersion.of(""), "blank version metadata");
+        assertThrows(NullPointerException.class, () -> ModStatusVersion.of(null), "null version metadata");
+    }
+
+    private static void testBuildMetadataStatusAndDisplay() {
+        ModStatusConfig inlineConfig = ModStatusConfig.builder()
+                .modId("examplemod")
+                .displayName("Example Mod")
+                .clientVersion("0.4.0+client123")
+                .payloadChannel("examplemod", "server_version")
+                .build();
+
+        ModStatusSnapshot snapshot = ModStatusKit.connected(inlineConfig, "0.4.0+server456");
+        ModStatusDisplay display = ModStatusKit.display(inlineConfig, snapshot);
+
+        assertEquals(VersionStatus.MATCHED, snapshot.status(), "same base version matches");
+        assertEquals("0.4.0", inlineConfig.clientVersion(), "config exposes base client version");
+        assertEquals("client123", inlineConfig.clientBuild(), "config exposes client build");
+        assertEquals("0.4.0", snapshot.serverVersion(), "snapshot exposes base server version");
+        assertEquals("server456", snapshot.serverBuild(), "snapshot exposes server build");
+        assertEquals("0.4.0", snapshot.serverVersionInfo().version(), "snapshot exposes version info base");
+        assertEquals("server456", snapshot.serverVersionInfo().build(), "snapshot exposes version info build");
+        assertEquals("0.4.0", display.clientVersion(), "display client base version");
+        assertEquals("client123", display.clientBuild(), "display client build");
+        assertEquals("0.4.0", display.serverVersion(), "display server base version");
+        assertEquals("server456", display.serverBuild(), "display server build");
+        assertEquals(StatusTone.GREEN, display.tone(), "build mismatch is diagnostic only");
+
+        ModStatusConfig explicitConfig = ModStatusConfig.builder()
+                .modId("examplemod")
+                .displayName("Example Mod")
+                .clientVersion("0.4.0+ignored")
+                .clientBuild("explicit789")
+                .payloadChannel("examplemod", "server_version")
+                .build();
+        assertEquals("explicit789", explicitConfig.clientBuild(), "explicit client build wins");
+    }
+
     private static void testVersionPayloadHelpers() {
         byte[] payload = ModStatusVersionPayload.encodeServerVersion(" 1.2.3 ");
         assertEquals("1.2.3", ModStatusVersionPayload.decodeServerVersion(payload), "decoded server version");
+
+        ModStatusVersion decodedPlain = ModStatusVersionPayload.decodeServerVersionInfo(
+                ModStatusVersionPayload.encodeServerVersion("1.2.3")
+        );
+        assertEquals("1.2.3", decodedPlain.version(), "decoded plain payload base version");
+        assertEquals(null, decodedPlain.build(), "decoded plain payload build absent");
+
+        ModStatusVersion decodedInline = ModStatusVersionPayload.decodeServerVersionInfo(
+                ModStatusVersionPayload.encodeServerVersion("0.4.0+server456")
+        );
+        assertEquals("0.4.0", decodedInline.version(), "decoded inline payload base version");
+        assertEquals("server456", decodedInline.build(), "decoded inline payload build");
+
+        byte[] explicitPayload = ModStatusVersionPayload.encodeServerVersion("0.4.0", "server456");
+        ModStatusVersion decodedExplicit = ModStatusVersionPayload.decodeServerVersionInfo(explicitPayload);
+        assertEquals("0.4.0", decodedExplicit.version(), "decoded explicit payload base version");
+        assertEquals("server456", decodedExplicit.build(), "decoded explicit payload build");
+        assertEquals(
+                true,
+                java.util.Arrays.equals(
+                        ModStatusVersionPayload.encodeServerVersion("1.2.3"),
+                        ModStatusVersionPayload.encodeServerVersion("1.2.3", null)
+                ),
+                "single and explicit null build payloads match"
+        );
 
         assertThrows(IllegalArgumentException.class, () -> ModStatusVersionPayload.encodeServerVersion(""), "blank encode");
         assertThrows(NullPointerException.class, () -> ModStatusVersionPayload.encodeServerVersion(null), "null encode");
@@ -153,6 +245,19 @@ public final class ModStatusKitTest {
         assertEquals(false, sent, "send unsupported result");
         assertEquals(null, sender.channel, "unsupported channel");
         assertEquals(null, sender.payload, "unsupported payload");
+
+        ModStatusConfig buildConfig = ModStatusConfig.builder()
+                .modId("examplemod")
+                .displayName("Example Mod")
+                .clientVersion("0.4.0")
+                .clientBuild("server456")
+                .payloadChannel("examplemod", "server_version")
+                .build();
+        sender = new RecordingPayloadSender();
+        sent = ModStatusVersionPayload.sendServerVersionIfSupported(buildConfig, channel -> true, sender);
+        assertEquals(true, sent, "send build metadata supported result");
+        assertEquals("examplemod:server_version", sender.channel, "sent build metadata channel");
+        assertEquals("0.4.0+server456", ModStatusVersionPayload.decodeServerVersion(sender.payload), "sent build metadata payload");
     }
 
     private static void testCustomMessages() {

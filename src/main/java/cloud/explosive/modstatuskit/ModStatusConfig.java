@@ -8,7 +8,7 @@ import java.util.Objects;
 public final class ModStatusConfig {
     private final String modId;
     private final String displayName;
-    private final String clientVersion;
+    private final ModStatusVersion clientVersion;
     private final String updateUrl;
     private final String payloadNamespace;
     private final String payloadPath;
@@ -17,7 +17,7 @@ public final class ModStatusConfig {
     private ModStatusConfig(Builder builder) {
         this.modId = ModStatusStrings.requireText(builder.modId, "modId");
         this.displayName = ModStatusStrings.requireText(builder.displayName, "displayName");
-        this.clientVersion = ModStatusStrings.requireText(builder.clientVersion, "clientVersion");
+        this.clientVersion = ModStatusVersion.of(builder.clientVersion, builder.clientBuild);
         this.updateUrl = ModStatusStrings.optionalText(builder.updateUrl);
         this.payloadNamespace = ModStatusStrings.requireText(builder.payloadNamespace, "payloadNamespace");
         this.payloadPath = ModStatusStrings.requireText(builder.payloadPath, "payloadPath");
@@ -37,6 +37,14 @@ public final class ModStatusConfig {
     }
 
     public String clientVersion() {
+        return clientVersion.version();
+    }
+
+    public String clientBuild() {
+        return clientVersion.build();
+    }
+
+    public ModStatusVersion clientVersionInfo() {
         return clientVersion;
     }
 
@@ -64,6 +72,7 @@ public final class ModStatusConfig {
         private String modId;
         private String displayName;
         private String clientVersion;
+        private String clientBuild;
         private String updateUrl;
         private String payloadNamespace;
         private String payloadPath;
@@ -81,6 +90,11 @@ public final class ModStatusConfig {
 
         public Builder clientVersion(String clientVersion) {
             this.clientVersion = clientVersion;
+            return this;
+        }
+
+        public Builder clientBuild(String clientBuild) {
+            this.clientBuild = clientBuild;
             return this;
         }
 

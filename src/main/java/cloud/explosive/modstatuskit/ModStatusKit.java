@@ -25,11 +25,11 @@ public final class ModStatusKit {
 
     public static ModStatusSnapshot connected(ModStatusConfig config, String serverVersion) {
         Objects.requireNonNull(config, "config");
-        String normalizedServerVersion = ModStatusStrings.requireText(serverVersion, "serverVersion");
-        VersionStatus status = config.clientVersion().equals(normalizedServerVersion)
+        ModStatusVersion serverVersionInfo = ModStatusVersion.of(serverVersion);
+        VersionStatus status = config.clientVersionInfo().version().equals(serverVersionInfo.version())
                 ? VersionStatus.MATCHED
                 : VersionStatus.DIFFERENT;
-        return ModStatusSnapshot.withServerVersion(normalizedServerVersion, status);
+        return ModStatusSnapshot.withServerVersion(serverVersionInfo, status);
     }
 
     public static ModStatusDisplay display(ModStatusConfig config, ModStatusSnapshot snapshot) {
@@ -43,7 +43,9 @@ public final class ModStatusKit {
         return new ModStatusDisplay(
                 config.displayName(),
                 config.clientVersion(),
+                config.clientBuild(),
                 serverVersion,
+                snapshot.serverBuild(),
                 messages.labelFor(status),
                 messages.helpFor(status),
                 status.tone(),

@@ -37,11 +37,39 @@ The config fields are:
 - mod id
 - display name
 - current client version
+- optional diagnostic build metadata
 - optional update URL
 - payload channel namespace and path
 - custom status/help messages
 
 Use a channel namespace owned by the consuming mod, normally the mod id. Use a path that is unique within that mod, such as `server_version` or `mod_status/server_version`.
+
+## Optional Build Metadata
+
+Mod writers can add optional build metadata when several jars share the same public version. ModStatusKit treats this as diagnostic detail by default: `0.4.0+abc1234` and `0.4.0+def5678` still match on the base version `0.4.0`, while the build values remain available for support screens or logs.
+
+Supported forms:
+
+```java
+ModStatusConfig inline = ModStatusConfig.builder()
+    .modId("examplemod")
+    .displayName("Example Mod")
+    .clientVersion("0.4.0+abc1234")
+    .payloadChannel("examplemod", "server_version")
+    .build();
+
+ModStatusConfig explicit = ModStatusConfig.builder()
+    .modId("examplemod")
+    .displayName("Example Mod")
+    .clientVersion("0.4.0")
+    .clientBuild(BuildInfo.GIT_COMMIT)
+    .payloadChannel("examplemod", "server_version")
+    .build();
+```
+
+The explicit `clientBuild(...)` value wins if both forms are present. Only SemVer-style `+build` metadata is parsed from version strings; unsupported forms such as `0.4.0-abc1234` remain ordinary version text.
+
+ModStatusKit does not discover Git information at runtime. Stamp the build value during Gradle or CI, then pass the generated constant or property to `clientBuild(...)`. Common sources include `git rev-parse --short HEAD`, `GITHUB_SHA`, a generated `BuildInfo` Java class, a generated properties resource, or expanded metadata in `fabric.mod.json`.
 
 ## Update Status
 
@@ -87,7 +115,9 @@ ModStatusDisplay display = ModStatusKit.display(config, snapshot);
 
 String title = display.displayName();
 String clientVersion = display.clientVersion();
+String clientBuild = display.clientBuild();
 String serverVersion = display.serverVersion();
+String serverBuild = display.serverBuild();
 String label = display.statusLabel();
 String help = display.helpText();
 StatusTone tone = display.tone();
@@ -146,6 +176,13 @@ The library core should not hardcode these mods or depend on Minecraft classes. 
 ```java
 byte[] payload = ModStatusVersionPayload.encodeServerVersion(config.clientVersion());
 String serverVersion = ModStatusVersionPayload.decodeServerVersion(payload);
+```
+
+Build-aware helpers are also available:
+
+```java
+byte[] payload = ModStatusVersionPayload.encodeServerVersion(config.clientVersion(), config.clientBuild());
+ModStatusVersion serverVersion = ModStatusVersionPayload.decodeServerVersionInfo(payload);
 ```
 
 On the server side, a consuming mod can delegate capability-gated sending without making ModStatusKit depend on Fabric classes:

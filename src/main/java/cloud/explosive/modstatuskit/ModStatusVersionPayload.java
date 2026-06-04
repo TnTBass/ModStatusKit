@@ -25,9 +25,17 @@ public final class ModStatusVersionPayload {
         return ModStatusStrings.requireText(serverVersion, "serverVersion").getBytes(StandardCharsets.UTF_8);
     }
 
+    public static byte[] encodeServerVersion(String serverVersion, String serverBuild) {
+        return ModStatusVersion.of(serverVersion, serverBuild).toPayloadString().getBytes(StandardCharsets.UTF_8);
+    }
+
     public static String decodeServerVersion(byte[] payload) {
         Objects.requireNonNull(payload, "payload");
         return ModStatusStrings.requireText(new String(payload, StandardCharsets.UTF_8), "serverVersion");
+    }
+
+    public static ModStatusVersion decodeServerVersionInfo(byte[] payload) {
+        return ModStatusVersion.of(decodeServerVersion(payload));
     }
 
     public static boolean sendServerVersionIfSupported(
@@ -43,7 +51,8 @@ public final class ModStatusVersionPayload {
         if (!support.canSend(channel)) {
             return false;
         }
-        sender.send(channel, encodeServerVersion(config.clientVersion()));
+        ModStatusVersion version = config.clientVersionInfo();
+        sender.send(channel, encodeServerVersion(version.version(), version.build()));
         return true;
     }
 }
