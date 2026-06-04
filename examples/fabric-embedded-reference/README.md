@@ -16,9 +16,23 @@ These snippets are intentionally not a full runnable mod. Copy the pieces into y
 ## Files
 
 - `ExampleModStatus.java`: shared config plus small client-side status state.
+- `BuildInfo.java`: example generated build metadata constant consumed by `ExampleModStatus`.
 - `ExampleModStatusNetworking.java`: server payload registration, capability-gated send helper, and join hook.
 - `ExampleModStatusClient.java`: client payload registration plus join/disconnect/tick timeout behavior.
 - `ExampleModStatusUiSnippet.java`: optional ModMenu entrypoint plus consuming-mod-owned UI rendering from `ModStatusDisplay`.
+
+## Build Metadata
+
+Keep the consuming mod's public version and jar filename stable, such as `yourmod-1.2.3.jar`, unless you intentionally want build metadata in public file names. Stamp build metadata into the jar as generated source or another build-time value, then pass it to ModStatusKit:
+
+```java
+.clientVersion(CURRENT_VERSION)
+.clientBuild(BuildInfo.GIT_COMMIT)
+```
+
+The `BuildInfo.java` file in this reference is a placeholder for generated consuming-mod integration code. In a real mod, generate it from Gradle/CI using sources such as `-PbuildNumber`, `GITHUB_SHA`, `GITHUB_RUN_NUMBER`, or `git rev-parse --short HEAD`.
+
+Render the base version as the primary player-facing version. Show build metadata only as optional diagnostic detail, such as `build abc1234` or `1.2.3+abc1234`. If the build value is missing, do not show placeholder text. If a local fallback such as `dev` is generated, hide it in normal player-facing UI unless you deliberately want to expose local build labels.
 
 ## Relocate ModStatusKit
 

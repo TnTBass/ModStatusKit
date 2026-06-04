@@ -23,6 +23,7 @@ public final class ExampleModStatus {
             .modId(MOD_ID)
             .displayName(DISPLAY_NAME)
             .clientVersion(CURRENT_VERSION)
+            .clientBuild(BuildInfo.GIT_COMMIT)
             .updateUrl(UPDATE_URL)
             .payloadChannel(MOD_ID, SERVER_VERSION_CHANNEL_PATH)
             .messages(ModStatusMessages.builder()
