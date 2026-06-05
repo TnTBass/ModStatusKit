@@ -51,9 +51,10 @@ public final class ExampleModStatusUiSnippet implements ModMenuApi {
         ModStatusDisplay display = ModStatusKit.display(
                 ExampleModStatus.CONFIG,
                 ExampleModStatus.CLIENT_STATE.snapshot());
+        int statusColor = statusColorFor(display);
 
-        ui.statusDot(colorFor(display.tone()), display.helpText());
-        ui.text(display.statusLabel(), colorFor(display.tone()), display.helpText());
+        ui.statusDot(statusColor, display.helpText());
+        ui.text(display.statusLabel(), statusColor, display.helpText());
         ui.text("Client: " + display.clientVersion());
         ui.text("Server: " + display.serverVersion());
 
@@ -61,6 +62,19 @@ public final class ExampleModStatusUiSnippet implements ModMenuApi {
         if (!display.updateUrl().isEmpty()) {
             ui.link("Updates", display.updateUrl());
         }
+    }
+
+    private static int statusColorFor(ModStatusDisplay display) {
+        if (display.tone() == StatusTone.GREEN && hasBuildMismatch(display)) {
+            return 0x33D6D6;
+        }
+        return colorFor(display.tone());
+    }
+
+    private static boolean hasBuildMismatch(ModStatusDisplay display) {
+        String clientBuild = display.clientBuild();
+        String serverBuild = display.serverBuild();
+        return clientBuild != null && serverBuild != null && !clientBuild.equals(serverBuild);
     }
 
     private static int colorFor(StatusTone tone) {
