@@ -21,7 +21,7 @@ The current embedded Fabric reference explains the right boundary, but the UI sa
 - Capability-gated server status payload sending.
 - Client join, disconnect, and tick timeout state transitions.
 - An optional ModMenu entrypoint that opens the consuming mod's config screen.
-- A small status indicator in that screen with tone color, hover/help text, client/server versions, and optional build metadata.
+- A compact square status indicator in that screen with tone color, hover/help text, client/server versions, and optional build metadata.
 
 ## Scope
 
@@ -64,7 +64,8 @@ The example should show these responsibilities as separate units:
 
 The UI reference should demonstrate a Carry Baby Animals-style status surface:
 
-- A small colored dot or compact indicator in a config screen.
+- A compact square status indicator in a config screen.
+- A small bordered square status box as the recommended copy/paste visual pattern.
 - Tooltip/help text built from `ModStatusDisplay`.
 - Client and server base versions.
 - Optional build metadata shown as `version+build` only when a real build is present.
@@ -74,6 +75,7 @@ The UI reference should demonstrate a Carry Baby Animals-style status surface:
 The example should provide named helpers that are easy to lift:
 
 - `toneColor(StatusTone tone) -> int` for ARGB green, teal, orange, red, and gray colors.
+- constants for the square indicator size and border color.
 - `tooltipText(ModStatusDisplay display) -> List<String>` for compact hover text before converting to Minecraft text components.
 - `versionWithBuild(String version, String build) -> String` for build metadata display.
 - sample display objects or sample comments that show green, teal, orange, red, and gray states.
@@ -136,7 +138,7 @@ Verification should include:
 ## Acceptance Criteria
 
 - `examples/fabric-embedded-reference` reads like a practical consuming-mod integration modeled on Carry Baby Animals' status integration quality.
-- Example docs are copy/paste-friendly for mod writers and call out required edits explicitly.
+- Example docs are copy/paste-friendly for mod writers, call out required edits explicitly, and recommend the compact square status indicator as the reusable visual pattern.
 - README/example docs clearly state that ModMenu is optional and not required to use ModStatusKit.
 - Core remains dependency-free and runtime-agnostic.
 - Current build metadata stamping docs and guidance remain present.

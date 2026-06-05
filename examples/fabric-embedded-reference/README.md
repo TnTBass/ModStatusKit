@@ -8,7 +8,7 @@ The intended pattern is:
 - keep ModStatusKit out of the player's required mod list
 - use a dedicated status payload, separate from gameplay packets
 - send that payload only when Fabric says the client can receive it
-- let the consuming mod own the UI and render `ModStatusDisplay` in its own style
+- let the consuming mod own the UI, with this reference rendering a recommended compact square status indicator from `ModStatusDisplay.tone()`
 - treat missing, old, or different-version servers as passive information by default
 
 These snippets are intentionally not a full runnable mod. Copy the pieces into your mod, update every `// CHANGE:` comment, and wire them into your existing Fabric entrypoints.
@@ -19,7 +19,7 @@ These snippets are intentionally not a full runnable mod. Copy the pieces into y
 - `BuildInfo.java`: example generated build metadata constant consumed by `ExampleModStatus`.
 - `ExampleModStatusNetworking.java`: server payload registration, capability-gated send helper, and join hook.
 - `ExampleModStatusClient.java`: client payload registration plus join/disconnect/tick timeout behavior.
-- `ExampleModStatusUiSnippet.java`: optional ModMenu entrypoint plus consuming-mod-owned UI rendering from `ModStatusDisplay`.
+- `ExampleModStatusUiSnippet.java`: optional ModMenu entrypoint plus a compact square status indicator rendered from `ModStatusDisplay`.
 
 ## Build Metadata
 
@@ -35,6 +35,8 @@ The `BuildInfo.java` file in this reference is a placeholder for generated consu
 Render the base version as the primary player-facing version. Show build metadata only as optional diagnostic detail, such as `build abc1234` or `1.2.3+abc1234`. If the build value is missing, do not show placeholder text. If a local fallback such as `dev` is generated, hide it in normal player-facing UI unless you deliberately want to expose local build labels.
 
 For color, render `ModStatusDisplay.tone()`, not `VersionStatus.tone()`. `VersionStatus.tone()` is only the default for the coarse status enum; it cannot see client build, server build, or server-declared mismatch severity. `ModStatusKit.display(...)` computes the final UI tone from all of that context.
+
+The reference visual pattern is a compact square status indicator next to the status label, with hover/help text from `ModStatusDisplay`. Mod writers can choose a different UI, but if they copy the reference implementation they should get the same small square status box across mods.
 
 For color, keep a build mismatch quieter than a version mismatch. The reference UI maps `StatusTone.TEAL` to a blue/teal diagnostic accent from `ModStatusDisplay.tone()`, with `StatusTone.ORANGE` for passive public/base mismatches, `StatusTone.RED` for explicit breaking public/base mismatches, and `StatusTone.GRAY` for disconnected, unknown, or server-not-detected states.
 
@@ -94,7 +96,7 @@ import com.example.yourmod.internal.modstatus.VersionStatus;
 
 ModMenu is optional.
 
-This reference shows the CarryBabyAnimals-style UI path: an optional client-side ModMenu integration that renders a small colored indicator dot, a status label, and hover/help text from `ModStatusDisplay`.
+This reference shows the CarryBabyAnimals-style UI path: an optional client-side ModMenu integration that renders a compact square status indicator, a status label, and hover/help text from `ModStatusDisplay`.
 
 Keep ModMenu optional. Use `compileOnly` or your loader's equivalent, put the entrypoint in client-only metadata, and do not make ModMenu a runtime dependency for gameplay or networking. If ModMenu is absent, the mod should still load and play normally; only this status UI is unavailable.
 

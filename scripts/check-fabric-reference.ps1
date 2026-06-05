@@ -18,6 +18,8 @@ Require-Text "examples\fabric-embedded-reference\README.md" "compileOnly" "optio
 Require-Text "examples\fabric-embedded-reference\README.md" "VersionMismatchSeverity\.BREAKING" "breaking severity guidance"
 Require-Text "examples\fabric-embedded-reference\README.md" "StatusTone\.TEAL" "teal build mismatch guidance"
 Require-Text "examples\fabric-embedded-reference\README.md" "green, teal, orange, red, and gray" "all reference tones"
+Require-Text "examples\fabric-embedded-reference\README.md" "compact square status indicator" "square status indicator guidance"
+Require-Text "examples\fabric-embedded-reference\README.md" "square status box" "square status box guidance"
 
 Require-Text "examples\fabric-embedded-reference\ExampleModStatusNetworking.java" "VersionMismatchSeverity\.WARN" "default WARN send path"
 Require-Text "examples\fabric-embedded-reference\ExampleModStatusNetworking.java" "VersionMismatchSeverity\.BREAKING" "breaking severity source guidance"
@@ -26,6 +28,8 @@ Require-Text "examples\fabric-embedded-reference\ExampleModStatusDisplay.java" "
 Require-Text "examples\fabric-embedded-reference\ExampleModStatusDisplay.java" "static List<String> tooltipText\(ModStatusDisplay display\)" "tooltip helper"
 Require-Text "examples\fabric-embedded-reference\ExampleModStatusDisplay.java" "static String versionWithBuild\(String version, String build\)" "build display helper"
 Require-Text "examples\fabric-embedded-reference\ExampleModStatusDisplay.java" "`"dev`"\.equalsIgnoreCase\(build\)" "dev build fallback hiding"
+Require-Text "examples\fabric-embedded-reference\ExampleModStatusDisplay.java" "STATUS_SQUARE_SIZE" "status square size constant"
+Require-Text "examples\fabric-embedded-reference\ExampleModStatusDisplay.java" "STATUS_SQUARE_BORDER_COLOR" "status square border constant"
 Require-Text "examples\fabric-embedded-reference\ExampleModStatusDisplay.java" "case GREEN -> 0xFF55FF55" "green color mapping"
 Require-Text "examples\fabric-embedded-reference\ExampleModStatusDisplay.java" "case TEAL -> 0xFF55FFFF" "teal color mapping"
 Require-Text "examples\fabric-embedded-reference\ExampleModStatusDisplay.java" "case ORANGE -> 0xFFFFAA00" "orange color mapping"
@@ -33,5 +37,7 @@ Require-Text "examples\fabric-embedded-reference\ExampleModStatusDisplay.java" "
 # ModStatusKit intentionally has no UNKNOWN or DISCONNECTED tone; unknown, disconnected,
 # and server-not-detected display states all collapse to StatusTone.GRAY.
 Require-Text "examples\fabric-embedded-reference\ExampleModStatusDisplay.java" "case GRAY -> 0xFFAAAAAA" "gray color mapping"
+Require-Text "examples\fabric-embedded-reference\ExampleModStatusUiSnippet.java" "statusSquare" "status square UI hook"
+Require-Text "examples\fabric-embedded-reference\ExampleModStatusUiSnippet.java" "square status box" "status box UI guidance"
 
 Write-Output "Fabric embedded reference checks passed."

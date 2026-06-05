@@ -15,7 +15,7 @@
 - Modify `examples/fabric-embedded-reference/ExampleModStatus.java`: keep shared consuming-mod config/state, clarify message copy, and expose lifecycle methods used by client integration.
 - Modify `examples/fabric-embedded-reference/ExampleModStatusClient.java`: keep client payload receiver and join/disconnect/tick callbacks as the Fabric-owned lifecycle bridge.
 - Modify `examples/fabric-embedded-reference/ExampleModStatusNetworking.java`: keep server payload registration and capability-gated status send using existing dependency-free core payload helpers.
-- Modify `examples/fabric-embedded-reference/ExampleModStatusUiSnippet.java`: make the optional ModMenu/config screen example delegate status formatting to a focused helper.
+- Modify `examples/fabric-embedded-reference/ExampleModStatusUiSnippet.java`: make the optional ModMenu/config screen example render a compact square status indicator and delegate status formatting to a focused helper.
 - Create `examples/fabric-embedded-reference/ExampleModStatusDisplay.java`: dependency-free display helper for tone colors, tooltip text, build formatting, and sample states.
 - Modify `examples/fabric-embedded-reference/README.md`: explain optional ModMenu, relocation, build metadata, state colors, WARN/BREAKING behavior, and how to copy the reference.
 - Modify `README.md`: point mod writers at the improved reference and restate that ModMenu is optional.
@@ -51,6 +51,8 @@ Require-Text "examples\fabric-embedded-reference\README.md" "compileOnly" "optio
 Require-Text "examples\fabric-embedded-reference\README.md" "VersionMismatchSeverity\.BREAKING" "breaking severity guidance"
 Require-Text "examples\fabric-embedded-reference\README.md" "StatusTone\.TEAL" "teal build mismatch guidance"
 Require-Text "examples\fabric-embedded-reference\README.md" "green, teal, orange, red, and gray" "all reference tones"
+Require-Text "examples\fabric-embedded-reference\README.md" "compact square status indicator" "square status indicator guidance"
+Require-Text "examples\fabric-embedded-reference\README.md" "square status box" "square status box guidance"
 
 Require-Text "examples\fabric-embedded-reference\ExampleModStatusNetworking.java" "VersionMismatchSeverity\.WARN" "default WARN send path"
 Require-Text "examples\fabric-embedded-reference\ExampleModStatusNetworking.java" "sendServerStatusIfSupported" "structured status send helper"
@@ -58,11 +60,15 @@ Require-Text "examples\fabric-embedded-reference\ExampleModStatusDisplay.java" "
 Require-Text "examples\fabric-embedded-reference\ExampleModStatusDisplay.java" "static List<String> tooltipText\(ModStatusDisplay display\)" "tooltip helper"
 Require-Text "examples\fabric-embedded-reference\ExampleModStatusDisplay.java" "static String versionWithBuild\(String version, String build\)" "build display helper"
 Require-Text "examples\fabric-embedded-reference\ExampleModStatusDisplay.java" "`"dev`"\.equalsIgnoreCase\(build\)" "dev build fallback hiding"
+Require-Text "examples\fabric-embedded-reference\ExampleModStatusDisplay.java" "STATUS_SQUARE_SIZE" "status square size constant"
+Require-Text "examples\fabric-embedded-reference\ExampleModStatusDisplay.java" "STATUS_SQUARE_BORDER_COLOR" "status square border constant"
 Require-Text "examples\fabric-embedded-reference\ExampleModStatusDisplay.java" "case GREEN -> 0xFF55FF55" "green color mapping"
 Require-Text "examples\fabric-embedded-reference\ExampleModStatusDisplay.java" "case TEAL -> 0xFF55FFFF" "teal color mapping"
 Require-Text "examples\fabric-embedded-reference\ExampleModStatusDisplay.java" "case ORANGE -> 0xFFFFAA00" "orange color mapping"
 Require-Text "examples\fabric-embedded-reference\ExampleModStatusDisplay.java" "case RED -> 0xFFFF5555" "red color mapping"
 Require-Text "examples\fabric-embedded-reference\ExampleModStatusDisplay.java" "case GRAY -> 0xFFAAAAAA" "gray color mapping"
+Require-Text "examples\fabric-embedded-reference\ExampleModStatusUiSnippet.java" "statusSquare" "status square UI hook"
+Require-Text "examples\fabric-embedded-reference\ExampleModStatusUiSnippet.java" "square status box" "status box UI guidance"
 
 Write-Output "Fabric embedded reference checks passed."
 ```
@@ -71,7 +77,7 @@ Write-Output "Fabric embedded reference checks passed."
 
 Run: `.\scripts\check-fabric-reference.ps1`
 
-Expected: FAIL because `ExampleModStatusDisplay.java` does not exist yet.
+Expected: FAIL because the reference does not yet contain the square status indicator language and `statusSquare` UI hook.
 
 ## Task 2: Add Display Helper And Update Optional UI Snippet
 
@@ -131,7 +137,7 @@ public final class ExampleModStatusDisplay {
 
 - [ ] **Step 2: Update the UI snippet to use the helper**
 
-Modify `ExampleModStatusUiSnippet.java` so `renderStatusRow` uses `ExampleModStatusDisplay.toneColor(display.tone())` and `ExampleModStatusDisplay.tooltipText(display)`.
+Modify `ExampleModStatusUiSnippet.java` so `renderStatusRow` uses `ExampleModStatusDisplay.toneColor(display.tone())`, `ExampleModStatusDisplay.tooltipText(display)`, and the compact square status indicator hook.
 
 Use this replacement shape for the status row:
 
@@ -143,7 +149,11 @@ public static void renderStatusRow(YourUiWriter ui) {
     int statusColor = ExampleModStatusDisplay.toneColor(display.tone());
     List<String> tooltip = ExampleModStatusDisplay.tooltipText(display);
 
-    ui.statusDot(statusColor, tooltip);
+    ui.statusSquare(
+            statusColor,
+            ExampleModStatusDisplay.STATUS_SQUARE_BORDER_COLOR,
+            ExampleModStatusDisplay.STATUS_SQUARE_SIZE,
+            tooltip);
     ui.text(display.statusLabel(), statusColor, tooltip);
     ui.text("Client: " + ExampleModStatusDisplay.versionWithBuild(display.clientVersion(), display.clientBuild()));
     ui.text("Server: " + ExampleModStatusDisplay.versionWithBuild(display.serverVersion(), display.serverBuild()));
@@ -220,6 +230,7 @@ Ensure `examples/fabric-embedded-reference/README.md` includes:
 - `VersionMismatchSeverity.BREAKING` as explicit red public/base mismatch policy
 - build metadata stamping and hiding `dev` fallback
 - copy/paste instructions for mod writers
+- the compact square status indicator and square status box as the recommended visual pattern
 
 - [ ] **Step 2: Update root README**
 

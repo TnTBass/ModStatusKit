@@ -12,6 +12,9 @@ import com.example.yourmod.internal.modstatus.StatusTone;
  * into the colors and strings your UI renders.
  */
 public final class ExampleModStatusDisplay {
+    static final int STATUS_SQUARE_SIZE = 8;
+    static final int STATUS_SQUARE_BORDER_COLOR = 0xFF222222;
+
     private ExampleModStatusDisplay() {
     }
 

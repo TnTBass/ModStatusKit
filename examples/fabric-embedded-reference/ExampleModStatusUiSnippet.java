@@ -24,7 +24,7 @@ public final class ExampleModStatusUiSnippet implements ModMenuApi {
 
     /**
      * CHANGE: replace this with your real ModMenu/config screen. The important
-     * part is the status row: colored dot, label, and hover text.
+     * part is the status row: compact square status indicator, label, and hover text.
      */
     private static final class ExampleStatusScreen extends Screen {
         private final Screen parent;
@@ -56,7 +56,11 @@ public final class ExampleModStatusUiSnippet implements ModMenuApi {
         int statusColor = ExampleModStatusDisplay.toneColor(display.tone());
         List<String> tooltip = ExampleModStatusDisplay.tooltipText(display);
 
-        ui.statusDot(statusColor, tooltip);
+        ui.statusSquare(
+                statusColor,
+                ExampleModStatusDisplay.STATUS_SQUARE_BORDER_COLOR,
+                ExampleModStatusDisplay.STATUS_SQUARE_SIZE,
+                tooltip);
         ui.text(display.statusLabel(), statusColor, tooltip);
         ui.text("Client: " + ExampleModStatusDisplay.versionWithBuild(display.clientVersion(), display.clientBuild()));
         ui.text("Server: " + ExampleModStatusDisplay.versionWithBuild(display.serverVersion(), display.serverBuild()));
@@ -69,8 +73,8 @@ public final class ExampleModStatusUiSnippet implements ModMenuApi {
 
     /**
      * CHANGE: replace this adapter with your actual screen/widget/draw-context
-     * code. CarryBabyAnimals-style UI uses the same idea: draw the dot and make
-     * the status row hoverable for the help text.
+     * code. CarryBabyAnimals-style UI uses the same idea: draw a small bordered
+     * square status box and make the status row hoverable for the help text.
      */
     public interface YourUiWriter {
         static YourUiWriter from(Screen screen) {
@@ -78,7 +82,7 @@ public final class ExampleModStatusUiSnippet implements ModMenuApi {
             throw new UnsupportedOperationException("Replace with your UI adapter");
         }
 
-        void statusDot(int argb, List<String> hoverText);
+        void statusSquare(int fillArgb, int borderArgb, int sizePixels, List<String> hoverText);
 
         void text(String text);
 
