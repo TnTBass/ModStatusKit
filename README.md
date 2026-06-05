@@ -217,9 +217,11 @@ StatusTone tone = display.tone();
 String updateUrl = display.updateUrl();
 ```
 
+Use `display.tone()` for UI color. `VersionStatus.tone()` is only the default tone for the coarse status enum, so it cannot see build metadata or mismatch severity. `ModStatusKit.display(...)` combines the status, client build, server build, and server-declared mismatch severity into the final `ModStatusDisplay.tone()` value that a UI should render.
+
 Show the base version as the primary version. Build metadata should be optional diagnostic detail, for example `build abc1234` next to the primary version or a compact support string such as `0.1.3+abc1234`. If build metadata is missing, do not show placeholder text such as `unknown build`. If the generated fallback is a local sentinel such as `dev`, hide it in normal player-facing UI unless the consuming mod deliberately wants to expose that.
 
-For color, keep build mismatch less alarming than a version mismatch. ModStatusKit keeps the status matched when base versions match, but `ModStatusDisplay.tone()` returns `StatusTone.TEAL` when both sides report different builds. That reads as "different build, probably fine" instead of "version problem." Missing or equal build metadata stays green.
+For color, keep build mismatch less alarming than a version mismatch. ModStatusKit keeps the status `MATCHED` when base versions match, but `ModStatusDisplay.tone()` returns `StatusTone.TEAL` when both sides report different builds. That teal decision happens in `ModStatusKit.display(...)`, not in `VersionStatus.tone()`. Missing or equal build metadata stays green.
 
 Recommended colors:
 

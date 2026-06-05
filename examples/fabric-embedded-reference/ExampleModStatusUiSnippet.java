@@ -65,6 +65,7 @@ public final class ExampleModStatusUiSnippet implements ModMenuApi {
     }
 
     private static int statusColorFor(ModStatusDisplay display) {
+        // Use the display tone, not VersionStatus.tone(); display tone includes build/severity context.
         return colorFor(display.tone());
     }
 

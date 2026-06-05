@@ -34,7 +34,9 @@ The `BuildInfo.java` file in this reference is a placeholder for generated consu
 
 Render the base version as the primary player-facing version. Show build metadata only as optional diagnostic detail, such as `build abc1234` or `1.2.3+abc1234`. If the build value is missing, do not show placeholder text. If a local fallback such as `dev` is generated, hide it in normal player-facing UI unless you deliberately want to expose local build labels.
 
-For color, keep a build mismatch quieter than a version mismatch. The reference UI maps `StatusTone.TEAL` to a blue/teal diagnostic accent from `ModStatusDisplay.tone()`.
+For color, render `ModStatusDisplay.tone()`, not `VersionStatus.tone()`. `VersionStatus.tone()` is only the default for the coarse status enum; it cannot see client build, server build, or server-declared mismatch severity. `ModStatusKit.display(...)` computes the final UI tone from all of that context.
+
+Keep a build mismatch quieter than a version mismatch. The reference UI maps `StatusTone.TEAL` to a blue/teal diagnostic accent from `ModStatusDisplay.tone()`. The status can still be `MATCHED`; teal is the display tone for "base version matched, reported builds differ."
 
 Recommended colors:
 
