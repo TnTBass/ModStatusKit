@@ -36,7 +36,9 @@ Render the base version as the primary player-facing version. Show build metadat
 
 For color, render `ModStatusDisplay.tone()`, not `VersionStatus.tone()`. `VersionStatus.tone()` is only the default for the coarse status enum; it cannot see client build, server build, or server-declared mismatch severity. `ModStatusKit.display(...)` computes the final UI tone from all of that context.
 
-Keep a build mismatch quieter than a version mismatch. The reference UI maps `StatusTone.TEAL` to a blue/teal diagnostic accent from `ModStatusDisplay.tone()`. The status can still be `MATCHED`; teal is the display tone for "base version matched, reported builds differ."
+For color, keep a build mismatch quieter than a version mismatch. The reference UI maps `StatusTone.TEAL` to a blue/teal diagnostic accent from `ModStatusDisplay.tone()`, with `StatusTone.ORANGE` for passive public/base mismatches, `StatusTone.RED` for explicit breaking public/base mismatches, and `StatusTone.GRAY` for disconnected, unknown, or server-not-detected states.
+
+The reference demonstrates green, teal, orange, red, and gray status tones. Green means the public/base versions match and build metadata is absent or equal; teal means the status can still be `MATCHED`, but the reported build metadata differs.
 
 Recommended colors:
 
@@ -46,7 +48,7 @@ Recommended colors:
 - Red: public/base versions differ and the server explicitly sent `VersionMismatchSeverity.BREAKING`.
 - Gray: disconnected, unknown, or server not detected.
 
-Use `BREAKING` only for a consuming-mod compatibility policy. It does not kick, block, or disconnect by itself; it only gives the UI a red status tone.
+Use `VersionMismatchSeverity.WARN` as the default status payload severity. That keeps public/base version mismatches passive and normally renders them with `StatusTone.ORANGE`. Use `VersionMismatchSeverity.BREAKING` only for an explicit red public/base mismatch policy chosen by the consuming mod. It does not kick, block, or disconnect by itself; it only gives the UI a red status tone.
 
 ## Relocate ModStatusKit
 
@@ -90,9 +92,20 @@ import com.example.yourmod.internal.modstatus.VersionStatus;
 
 ## ModMenu Is Optional
 
+ModMenu is optional.
+
 This reference shows the CarryBabyAnimals-style UI path: an optional client-side ModMenu integration that renders a small colored indicator dot, a status label, and hover/help text from `ModStatusDisplay`.
 
 Keep ModMenu optional. Use `compileOnly` or your loader's equivalent, put the entrypoint in client-only metadata, and do not make ModMenu a runtime dependency for gameplay or networking. If ModMenu is absent, the mod should still load and play normally; only this status UI is unavailable.
+
+Copy/paste dependency guidance for Fabric mod writers:
+
+```groovy
+dependencies {
+    // CHANGE: keep ModMenu optional; do not require it at runtime.
+    compileOnly "com.terraformersmc:modmenu:${project.modmenu_version}"
+}
+```
 
 ## Verification Checklist
 

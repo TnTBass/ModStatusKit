@@ -80,6 +80,7 @@ public final class ExampleModStatus {
         ticksSinceJoin++;
 
         // CHANGE: pick a short timeout that feels natural in your client UI.
+        // This is passive information only; it does not disconnect, kick, or gate gameplay.
         if (ticksSinceJoin >= 100) {
             CLIENT_STATE.markServerNotDetectedIfUnknown();
             waitingForServerStatus = false;

@@ -40,9 +40,8 @@ public final class ExampleModStatusNetworking {
 
         ModStatusVersionPayload.sendServerStatusIfSupported(
                 ExampleModStatus.CONFIG,
-                // CHANGE: use BREAKING only if your server-side mod intentionally treats
-                // public version mismatch as an incompatibility. Build mismatch remains
-                // diagnostic and should not use BREAKING.
+                // CHANGE: use VersionMismatchSeverity.BREAKING only when a public/base version
+                // mismatch is truly incompatible for your mod. Build mismatch stays diagnostic.
                 VersionMismatchSeverity.WARN,
                 channel -> true,
                 (channel, payload) -> ServerPlayNetworking.send(player, new ServerVersionPayload(payload)));

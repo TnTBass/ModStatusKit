@@ -233,6 +233,8 @@ Recommended colors:
 
 The consuming mod decides where this appears. A common choice is a ModMenu/config screen section when ModMenu is present. If ModMenu is absent, the consuming mod should simply skip that UI; gameplay still works.
 
+For a fuller Fabric example, see `examples/fabric-embedded-reference`. That reference uses optional ModMenu as one UI pattern, but ModMenu is not required to use ModStatusKit.
+
 ## Status States
 
 ModStatusKit models these informational states:
