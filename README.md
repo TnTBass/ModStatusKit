@@ -361,3 +361,29 @@ Run the dependency-free Java core tests:
 ```powershell
 .\scripts\test-java-core.ps1
 ```
+
+Run the release-gate tests:
+
+```powershell
+.\scripts\test-release-gate.ps1
+```
+
+## Release Gate
+
+Before making a GitHub release, increment the root `VERSION` file, commit that change, and run:
+
+```powershell
+.\scripts\check-release-gate.ps1 -Mode PreRelease
+```
+
+The pre-release gate fails if `VERSION` is not greater than the latest known `vX.Y.Z` GitHub release/tag, or if `v<VERSION>` already exists locally, on `origin`, or as a GitHub release.
+
+This pre-release check can run before pushing the version-bump commit. It checks the local `VERSION` value and published tag/release state, but it does not check tag-to-`HEAD` alignment until the tag exists.
+
+After tagging, pushing the tag, and creating the GitHub release, run:
+
+```powershell
+.\scripts\check-release-gate.ps1 -Mode PostRelease
+```
+
+The post-release gate fails unless `v<VERSION>` exists locally, exists on `origin`, exists as a GitHub release, and points at the current `HEAD`.
