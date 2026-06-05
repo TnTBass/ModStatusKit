@@ -8,16 +8,25 @@ import java.util.Objects;
 public final class ModStatusSnapshot {
     private final ModStatusVersion serverVersion;
     private final VersionStatus status;
+    private final VersionMismatchSeverity versionMismatchSeverity;
 
     private ModStatusSnapshot(String serverVersion, VersionStatus status) {
         String normalized = normalize(serverVersion);
         this.serverVersion = normalized == null ? null : ModStatusVersion.of(normalized);
         this.status = Objects.requireNonNull(status, "status");
+        this.versionMismatchSeverity = VersionMismatchSeverity.WARN;
     }
 
-    private ModStatusSnapshot(ModStatusVersion serverVersion, VersionStatus status) {
+    private ModStatusSnapshot(
+            ModStatusVersion serverVersion,
+            VersionStatus status,
+            VersionMismatchSeverity versionMismatchSeverity
+    ) {
         this.serverVersion = Objects.requireNonNull(serverVersion, "serverVersion");
         this.status = Objects.requireNonNull(status, "status");
+        this.versionMismatchSeverity = versionMismatchSeverity == null
+                ? VersionMismatchSeverity.WARN
+                : versionMismatchSeverity;
     }
 
     public static ModStatusSnapshot disconnected() {
@@ -37,10 +46,18 @@ public final class ModStatusSnapshot {
     }
 
     static ModStatusSnapshot withServerVersion(ModStatusVersion serverVersion, VersionStatus status) {
+        return withServerVersion(serverVersion, status, VersionMismatchSeverity.WARN);
+    }
+
+    static ModStatusSnapshot withServerVersion(
+            ModStatusVersion serverVersion,
+            VersionStatus status,
+            VersionMismatchSeverity versionMismatchSeverity
+    ) {
         if (status != VersionStatus.MATCHED && status != VersionStatus.DIFFERENT) {
             throw new IllegalArgumentException("status must be MATCHED or DIFFERENT when serverVersion is present");
         }
-        return new ModStatusSnapshot(serverVersion, status);
+        return new ModStatusSnapshot(serverVersion, status, versionMismatchSeverity);
     }
 
     public String serverVersion() {
@@ -57,6 +74,13 @@ public final class ModStatusSnapshot {
 
     public VersionStatus status() {
         return status;
+    }
+
+    /**
+     * Severity is meaningful when {@link #status()} is {@link VersionStatus#DIFFERENT}.
+     */
+    public VersionMismatchSeverity versionMismatchSeverity() {
+        return versionMismatchSeverity;
     }
 
     private static String normalize(String value) {

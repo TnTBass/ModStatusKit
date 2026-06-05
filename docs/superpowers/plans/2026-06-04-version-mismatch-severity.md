@@ -109,7 +109,7 @@ Rules:
 - Modify: `src/main/java/cloud/explosive/modstatuskit/ModStatusKit.java`
 - Modify: `src/test/java/cloud/explosive/modstatuskit/ModStatusKitTest.java`
 
-- [ ] **Step 1: Write failing tests for version mismatch severity**
+- [x] **Step 1: Write failing tests for version mismatch severity**
 
 Add this call to `main` after `testBuildMetadataStatusAndDisplay();`:
 
@@ -180,7 +180,7 @@ private static void testVersionMismatchSeverityStatusAndDisplay() {
 }
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run:
 
@@ -190,7 +190,7 @@ Run:
 
 Expected: compile failure mentioning missing `ModStatusServerStatus`, `VersionMismatchSeverity`, or `StatusTone.RED`.
 
-- [ ] **Step 3: Add `VersionMismatchSeverity`**
+- [x] **Step 3: Add `VersionMismatchSeverity`**
 
 Create `src/main/java/cloud/explosive/modstatuskit/VersionMismatchSeverity.java`:
 
@@ -219,7 +219,7 @@ public enum VersionMismatchSeverity {
 }
 ```
 
-- [ ] **Step 4: Add `ModStatusServerStatus`**
+- [x] **Step 4: Add `ModStatusServerStatus`**
 
 Create `src/main/java/cloud/explosive/modstatuskit/ModStatusServerStatus.java`:
 
@@ -279,7 +279,7 @@ public final class ModStatusServerStatus {
 }
 ```
 
-- [ ] **Step 5: Add `RED` tone and severity-aware snapshot/display flow**
+- [x] **Step 5: Add `RED` tone and severity-aware snapshot/display flow**
 
 Update `src/main/java/cloud/explosive/modstatuskit/StatusTone.java`:
 
@@ -405,7 +405,7 @@ private static StatusTone toneFor(VersionStatus status, VersionMismatchSeverity 
 }
 ```
 
-- [ ] **Step 6: Run test to verify it passes**
+- [x] **Step 6: Run test to verify it passes**
 
 Run:
 
@@ -421,7 +421,7 @@ Expected: `ModStatusKitTest passed`.
 - Modify: `src/main/java/cloud/explosive/modstatuskit/ModStatusVersionPayload.java`
 - Modify: `src/test/java/cloud/explosive/modstatuskit/ModStatusKitTest.java`
 
-- [ ] **Step 1: Write failing tests for structured payload compatibility**
+- [x] **Step 1: Write failing tests for structured payload compatibility**
 
 Add this call to `main` after `testVersionPayloadHelpers();`:
 
@@ -487,7 +487,7 @@ private static void testStructuredStatusPayloadHelpers() {
 }
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run:
 
@@ -497,7 +497,7 @@ Run:
 
 Expected: compile failure mentioning missing `encodeServerStatus` and `decodeServerStatus`.
 
-- [ ] **Step 3: Implement structured payload helpers**
+- [x] **Step 3: Implement structured payload helpers**
 
 In `ModStatusVersionPayload`, add constants:
 
@@ -592,7 +592,7 @@ private static void appendField(StringBuilder payload, String key, String value)
 }
 ```
 
-- [ ] **Step 4: Add send helper overload for structured status**
+- [x] **Step 4: Add send helper overload for structured status**
 
 Add:
 
@@ -619,7 +619,7 @@ public static boolean sendServerStatusIfSupported(
 
 Keep `sendServerVersionIfSupported(...)` unchanged so existing consuming mods continue to send legacy payloads unless they opt into structured status.
 
-- [ ] **Step 5: Extend send helper tests**
+- [x] **Step 5: Extend send helper tests**
 
 Extend `testVersionPayloadSendIfSupported()` with:
 
@@ -646,7 +646,7 @@ assertEquals("server456", sentStatus.serverBuild(), "sent structured status buil
 assertEquals(VersionMismatchSeverity.BREAKING, sentStatus.versionMismatchSeverity(), "sent structured status severity");
 ```
 
-- [ ] **Step 6: Run test to verify it passes**
+- [x] **Step 6: Run test to verify it passes**
 
 Run:
 
@@ -664,7 +664,7 @@ Expected: `ModStatusKitTest passed`.
 - Modify: `examples/fabric-embedded-reference/ExampleModStatusUiSnippet.java`
 - Modify: `examples/fabric-embedded-reference/README.md`
 
-- [ ] **Step 1: Update client payload handling example**
+- [x] **Step 1: Update client payload handling example**
 
 In `ExampleModStatusClient.java`, change the client receiver path from decoding a raw server version string and calling `ExampleModStatus.onServerVersion(serverVersion)` to decoding `ModStatusServerStatus` and calling a new overload:
 
@@ -675,7 +675,7 @@ ExampleModStatus.onServerStatus(serverStatus);
 
 If the existing snippet uses Fabric callback-specific payload APIs, keep the surrounding Fabric code unchanged and only replace the ModStatusKit decode/callback lines.
 
-- [ ] **Step 2: Update `ExampleModStatus.java` callback**
+- [x] **Step 2: Update `ExampleModStatus.java` callback**
 
 Add this import:
 
@@ -702,7 +702,7 @@ public static void onServerVersion(String serverVersion) {
 
 This requires Task 4 to add `ModStatusClientState.connected(ModStatusServerStatus)`.
 
-- [ ] **Step 3: Update server send example**
+- [x] **Step 3: Update server send example**
 
 In `ExampleModStatusNetworking.java`, keep the default send path passive:
 
@@ -723,7 +723,7 @@ Add a comment directly above it:
 // diagnostic and should not use BREAKING.
 ```
 
-- [ ] **Step 4: Update UI snippet color mapping**
+- [x] **Step 4: Update UI snippet color mapping**
 
 After `StatusTone.RED` exists, update `colorFor(StatusTone tone)`:
 
@@ -740,7 +740,7 @@ private static int colorFor(StatusTone tone) {
 
 Keep the existing `statusColorFor(display)` teal override guarded by `display.tone() == StatusTone.GREEN`.
 
-- [ ] **Step 5: Update embedded reference README**
+- [x] **Step 5: Update embedded reference README**
 
 Add a concise palette list:
 
@@ -756,7 +756,7 @@ Recommended colors:
 Use `BREAKING` only for a consuming-mod compatibility policy. It does not kick, block, or disconnect by itself; it only gives the UI a red status tone.
 ```
 
-- [ ] **Step 6: Run docs/example checks**
+- [x] **Step 6: Run docs/example checks**
 
 Run:
 
@@ -772,7 +772,7 @@ Expected: matches in root README, embedded reference README, and example Java sn
 - Modify: `src/main/java/cloud/explosive/modstatuskit/ModStatusClientState.java`
 - Modify: `src/test/java/cloud/explosive/modstatuskit/ModStatusKitTest.java`
 
-- [ ] **Step 1: Write failing test for client state structured status**
+- [x] **Step 1: Write failing test for client state structured status**
 
 Extend `testClientStateTransitions()` after the existing version mismatch assertion:
 
@@ -783,7 +783,7 @@ assertEquals(VersionMismatchSeverity.BREAKING, state.snapshot().versionMismatchS
 assertEquals(StatusTone.RED, state.display().tone(), "breaking client state display tone");
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run:
 
@@ -793,7 +793,7 @@ Run:
 
 Expected: compile failure mentioning missing `connected(ModStatusServerStatus)`.
 
-- [ ] **Step 3: Add overload**
+- [x] **Step 3: Add overload**
 
 In `ModStatusClientState`, add:
 
@@ -811,7 +811,7 @@ public void connected(String serverVersion) {
 }
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run:
 
@@ -827,7 +827,7 @@ Expected: `ModStatusKitTest passed`.
 - Modify: `README.md`
 - Modify: `VERSION`
 
-- [ ] **Step 1: Update root README palette and payload guidance**
+- [x] **Step 1: Update root README palette and payload guidance**
 
 Update the status color guidance so it says:
 
@@ -847,7 +847,7 @@ Add a short payload paragraph:
 Structured status payloads are optional. Legacy payloads that contain only `1.2.3` or `1.2.3+abc1234` still decode as passive `WARN` mismatches. Use structured status only when the consuming server wants to declare public version mismatch severity.
 ```
 
-- [ ] **Step 2: Document red boundary**
+- [x] **Step 2: Document red boundary**
 
 Add this wording near the passive-status guidance:
 
@@ -855,7 +855,7 @@ Add this wording near the passive-status guidance:
 `BREAKING` does not enforce anything by itself. It only lets the consuming UI render a public version mismatch as red. If a consuming mod wants to kick, disconnect, block gameplay, or disable a feature, that policy still belongs to the consuming mod.
 ```
 
-- [ ] **Step 3: Bump version**
+- [x] **Step 3: Bump version**
 
 Inspect `VERSION`, then increment the patch version by one. If `VERSION` is currently `0.1.4`, change it to:
 
@@ -863,7 +863,7 @@ Inspect `VERSION`, then increment the patch version by one. If `VERSION` is curr
 0.1.5
 ```
 
-- [ ] **Step 4: Run final local verification**
+- [x] **Step 4: Run final local verification**
 
 Run:
 
@@ -902,7 +902,7 @@ Expected: matches show the severity model, red status tone, teal build mismatch 
 **Files:**
 - Review scope: all files changed by Tasks 1-5.
 
-- [ ] **Step 1: Check worktree scope**
+- [x] **Step 1: Check worktree scope**
 
 Run:
 
@@ -912,7 +912,7 @@ git status --short
 
 Expected: only files from this plan are modified or added.
 
-- [ ] **Step 2: Send implementation through Revue**
+- [x] **Step 2: Send implementation through Revue**
 
 Create a Revue `implementation-review` with explicit files and requirements:
 
@@ -924,7 +924,7 @@ Create a Revue `implementation-review` with explicit files and requirements:
 - Core remains dependency-free with no Fabric/Loom dependencies.
 - Docs/reference explain the palette and policy boundary.
 
-- [ ] **Step 3: Action Revue findings**
+- [x] **Step 3: Action Revue findings**
 
 For each finding:
 
@@ -933,7 +933,7 @@ For each finding:
 - Re-run `.\scripts\test-java-core.ps1`, `git diff --check`, and the placeholder scan after fixes.
 - Run a targeted Revue follow-up if the fix materially changes the reviewed behavior.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 Run:
 

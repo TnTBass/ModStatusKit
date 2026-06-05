@@ -81,6 +81,7 @@ public final class ExampleModStatusUiSnippet implements ModMenuApi {
         return switch (tone) {
             case GREEN -> 0x55FF55;
             case ORANGE -> 0xFFAA00;
+            case RED -> 0xFF5555;
             case GRAY -> 0xAAAAAA;
         };
     }

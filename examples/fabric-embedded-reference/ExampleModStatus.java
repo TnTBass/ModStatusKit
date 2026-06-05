@@ -4,6 +4,7 @@ package com.example.yourmod;
 import com.example.yourmod.internal.modstatus.ModStatusConfig;
 import com.example.yourmod.internal.modstatus.ModStatusClientState;
 import com.example.yourmod.internal.modstatus.ModStatusMessages;
+import com.example.yourmod.internal.modstatus.ModStatusServerStatus;
 import com.example.yourmod.internal.modstatus.VersionStatus;
 
 /**
@@ -63,7 +64,11 @@ public final class ExampleModStatus {
     }
 
     public static void onServerVersion(String serverVersion) {
-        CLIENT_STATE.connected(serverVersion);
+        onServerStatus(ModStatusServerStatus.of(serverVersion));
+    }
+
+    public static void onServerStatus(ModStatusServerStatus serverStatus) {
+        CLIENT_STATE.connected(serverStatus);
         waitingForServerStatus = false;
     }
 

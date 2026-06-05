@@ -221,6 +221,14 @@ Show the base version as the primary version. Build metadata should be optional 
 
 For color, keep build mismatch less alarming than a version mismatch. ModStatusKit returns the normal matched tone when base versions match, even if both sides report different builds. A consuming UI can still choose a blue or teal diagnostic accent when `display.clientBuild()` and `display.serverBuild()` are both present and different. That reads as "different build, probably fine" instead of "version problem." Missing build metadata should not change the matched color.
 
+Recommended colors:
+
+- Green: public/base versions match and build metadata is absent or equal.
+- Blue/teal: public/base versions match, but both sides report different builds.
+- Orange: public/base versions differ and the server did not mark mismatch as breaking.
+- Red: public/base versions differ and the server explicitly sent `VersionMismatchSeverity.BREAKING`.
+- Gray: disconnected, unknown, or server not detected.
+
 The consuming mod decides where this appears. A common choice is a ModMenu/config screen section when ModMenu is present. If ModMenu is absent, the consuming mod should simply skip that UI; gameplay still works.
 
 ## Status States
@@ -230,11 +238,14 @@ ModStatusKit models these informational states:
 - `Matched`: client and server versions are the same; display green.
 - matched base version with different reported builds: optional blue or teal diagnostic accent in the consuming mod UI.
 - `Different versions`: client and server versions differ; display orange.
+- public/base version mismatch marked as `VersionMismatchSeverity.BREAKING` by the server: display red.
 - `Disconnected`: the client is not connected to a server or world; display gray.
 - `Server not detected`: connected to a server where the consuming server mod was not detected; display gray.
 - `Unknown`: connected, but no server version payload has been received; display gray.
 
 ModStatusKit itself is informational only. It does not gate gameplay, kick players, disconnect clients, or show automatic login nags. A consuming mod may still choose to enforce its own policy based on the status data.
+
+`BREAKING` does not enforce anything by itself. It only lets the consuming UI render a public version mismatch as red. If a consuming mod wants to kick, disconnect, block gameplay, or disable a feature, that policy still belongs to the consuming mod.
 
 ## Customize Messages
 
@@ -281,6 +292,18 @@ Build-aware helpers are also available:
 ```java
 byte[] payload = ModStatusVersionPayload.encodeServerVersion(config.clientVersion(), config.clientBuild());
 ModStatusVersion serverVersion = ModStatusVersionPayload.decodeServerVersionInfo(payload);
+```
+
+Structured status payloads are optional. Legacy payloads that contain only `1.2.3` or `1.2.3+abc1234` still decode as passive `WARN` mismatches. Use structured status only when the consuming server wants to declare public version mismatch severity.
+
+```java
+byte[] payload = ModStatusVersionPayload.encodeServerStatus(
+    config.clientVersion(),
+    config.clientBuild(),
+    VersionMismatchSeverity.BREAKING
+);
+ModStatusServerStatus serverStatus = ModStatusVersionPayload.decodeServerStatus(payload);
+ModStatusSnapshot snapshot = ModStatusKit.connected(config, serverStatus);
 ```
 
 On the server side, a consuming mod can delegate capability-gated sending without making ModStatusKit depend on Fabric classes:

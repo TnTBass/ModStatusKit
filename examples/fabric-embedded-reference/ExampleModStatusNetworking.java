@@ -11,6 +11,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Identifier;
 
 // CHANGE: import your relocated/internal ModStatusKit package.
+import com.example.yourmod.internal.modstatus.VersionMismatchSeverity;
 import com.example.yourmod.internal.modstatus.ModStatusVersionPayload;
 
 /**
@@ -37,9 +38,14 @@ public final class ExampleModStatusNetworking {
             return;
         }
 
-        ServerPlayNetworking.send(
-                player,
-                new ServerVersionPayload(ModStatusVersionPayload.encodeServerVersion(ExampleModStatus.CURRENT_VERSION)));
+        ModStatusVersionPayload.sendServerStatusIfSupported(
+                ExampleModStatus.CONFIG,
+                // CHANGE: use BREAKING only if your server-side mod intentionally treats
+                // public version mismatch as an incompatibility. Build mismatch remains
+                // diagnostic and should not use BREAKING.
+                VersionMismatchSeverity.WARN,
+                channel -> true,
+                (channel, payload) -> ServerPlayNetworking.send(player, new ServerVersionPayload(payload)));
     }
 
     /**
@@ -57,8 +63,8 @@ public final class ExampleModStatusNetworking {
                 (payload, buf) -> buf.writeByteArray(payload.value()),
                 buf -> new ServerVersionPayload(buf.readByteArray(64)));
 
-        public String serverVersion() {
-            return ModStatusVersionPayload.decodeServerVersion(value);
+        public byte[] value() {
+            return value;
         }
 
         @Override

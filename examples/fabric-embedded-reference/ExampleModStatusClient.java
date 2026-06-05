@@ -6,6 +6,10 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 
+// CHANGE: import your relocated/internal ModStatusKit package.
+import com.example.yourmod.internal.modstatus.ModStatusServerStatus;
+import com.example.yourmod.internal.modstatus.ModStatusVersionPayload;
+
 /**
  * Client-side status networking and timeout behavior.
  */
@@ -20,8 +24,10 @@ public final class ExampleModStatusClient {
 
         ClientPlayNetworking.registerGlobalReceiver(
                 ExampleModStatusNetworking.ServerVersionPayload.TYPE,
-                (payload, context) -> context.client().execute(() ->
-                        ExampleModStatus.onServerVersion(payload.serverVersion())));
+                (payload, context) -> context.client().execute(() -> {
+                    ModStatusServerStatus serverStatus = ModStatusVersionPayload.decodeServerStatus(payload.value());
+                    ExampleModStatus.onServerStatus(serverStatus);
+                }));
 
         ClientPlayConnectionEvents.JOIN.register((handler, sender, client) ->
                 ExampleModStatus.onClientJoin());

@@ -34,7 +34,17 @@ The `BuildInfo.java` file in this reference is a placeholder for generated consu
 
 Render the base version as the primary player-facing version. Show build metadata only as optional diagnostic detail, such as `build abc1234` or `1.2.3+abc1234`. If the build value is missing, do not show placeholder text. If a local fallback such as `dev` is generated, hide it in normal player-facing UI unless you deliberately want to expose local build labels.
 
-For color, keep a build mismatch quieter than a version mismatch. Use green when base versions match and build metadata is absent or equal. If both client and server builds are present and differ, a blue or teal accent works well as diagnostic information: different build, but not necessarily a concern. Keep orange for public version mismatch and gray for disconnected, unknown, or server-not-detected states.
+For color, keep a build mismatch quieter than a version mismatch.
+
+Recommended colors:
+
+- Green: public/base versions match and build metadata is absent or equal.
+- Blue/teal: public/base versions match, but both sides report different builds.
+- Orange: public/base versions differ and the server did not mark mismatch as breaking.
+- Red: public/base versions differ and the server explicitly sent `VersionMismatchSeverity.BREAKING`.
+- Gray: disconnected, unknown, or server not detected.
+
+Use `BREAKING` only for a consuming-mod compatibility policy. It does not kick, block, or disconnect by itself; it only gives the UI a red status tone.
 
 ## Relocate ModStatusKit
 
@@ -70,7 +80,9 @@ import com.example.yourmod.internal.modstatus.ModStatusDisplay;
 import com.example.yourmod.internal.modstatus.ModStatusKit;
 import com.example.yourmod.internal.modstatus.ModStatusMessages;
 import com.example.yourmod.internal.modstatus.ModStatusSnapshot;
+import com.example.yourmod.internal.modstatus.ModStatusServerStatus;
 import com.example.yourmod.internal.modstatus.ModStatusVersionPayload;
+import com.example.yourmod.internal.modstatus.VersionMismatchSeverity;
 import com.example.yourmod.internal.modstatus.VersionStatus;
 ```
 

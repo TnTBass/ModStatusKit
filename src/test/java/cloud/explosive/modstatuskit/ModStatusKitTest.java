@@ -10,7 +10,9 @@ public final class ModStatusKitTest {
         testClientStateSnapshotFieldIsVolatile();
         testVersionMetadataParsing();
         testBuildMetadataStatusAndDisplay();
+        testVersionMismatchSeverityStatusAndDisplay();
         testVersionPayloadHelpers();
+        testStructuredStatusPayloadHelpers();
         testVersionPayloadSendIfSupported();
         testCustomMessages();
         testConnectedRejectsInvalidServerVersions();
@@ -120,6 +122,11 @@ public final class ModStatusKitTest {
         state.connected("1.2.4");
         assertEquals(VersionStatus.DIFFERENT, state.snapshot().status(), "different connected state");
 
+        state.connected(ModStatusServerStatus.of("1.2.5", null, VersionMismatchSeverity.BREAKING));
+        assertEquals(VersionStatus.DIFFERENT, state.snapshot().status(), "breaking connected state");
+        assertEquals(VersionMismatchSeverity.BREAKING, state.snapshot().versionMismatchSeverity(), "breaking client state severity");
+        assertEquals(StatusTone.RED, state.display().tone(), "breaking client state display tone");
+
         state.disconnected();
         assertEquals(VersionStatus.DISCONNECTED, state.snapshot().status(), "disconnected client state");
     }
@@ -195,6 +202,65 @@ public final class ModStatusKitTest {
         assertEquals("explicit789", explicitConfig.clientBuild(), "explicit client build wins");
     }
 
+    private static void testVersionMismatchSeverityStatusAndDisplay() {
+        ModStatusConfig config = ModStatusConfig.builder()
+                .modId("examplemod")
+                .displayName("Example Mod")
+                .clientVersion("1.2.3")
+                .payloadChannel("examplemod", "server_version")
+                .build();
+
+        ModStatusServerStatus warnServer = ModStatusServerStatus.of("1.2.4");
+        ModStatusSnapshot warnSnapshot = ModStatusKit.connected(config, warnServer);
+        ModStatusDisplay warnDisplay = ModStatusKit.display(config, warnSnapshot);
+        assertEquals(VersionStatus.DIFFERENT, warnSnapshot.status(), "warn mismatch status");
+        assertEquals(VersionMismatchSeverity.WARN, warnSnapshot.versionMismatchSeverity(), "warn default severity");
+        assertEquals(StatusTone.ORANGE, warnDisplay.tone(), "warn mismatch stays orange");
+
+        ModStatusServerStatus breakingServer = ModStatusServerStatus.of(
+                "1.2.4",
+                null,
+                VersionMismatchSeverity.BREAKING
+        );
+        ModStatusSnapshot breakingSnapshot = ModStatusKit.connected(config, breakingServer);
+        ModStatusDisplay breakingDisplay = ModStatusKit.display(config, breakingSnapshot);
+        assertEquals(VersionStatus.DIFFERENT, breakingSnapshot.status(), "breaking mismatch status");
+        assertEquals(VersionMismatchSeverity.BREAKING, breakingSnapshot.versionMismatchSeverity(), "breaking severity");
+        assertEquals(StatusTone.RED, breakingDisplay.tone(), "breaking mismatch renders red");
+
+        ModStatusServerStatus matchedBreakingServer = ModStatusServerStatus.of(
+                "1.2.3",
+                null,
+                VersionMismatchSeverity.BREAKING
+        );
+        ModStatusDisplay matchedBreakingDisplay = ModStatusKit.display(
+                config,
+                ModStatusKit.connected(config, matchedBreakingServer)
+        );
+        assertEquals(StatusTone.GREEN, matchedBreakingDisplay.tone(), "matched version ignores breaking severity");
+
+        ModStatusConfig buildConfig = ModStatusConfig.builder()
+                .modId("examplemod")
+                .displayName("Example Mod")
+                .clientVersion("1.2.3")
+                .clientBuild("client123")
+                .payloadChannel("examplemod", "server_version")
+                .build();
+        ModStatusServerStatus buildMismatchServer = ModStatusServerStatus.of(
+                "1.2.3",
+                "server456",
+                VersionMismatchSeverity.BREAKING
+        );
+        ModStatusDisplay buildMismatchDisplay = ModStatusKit.display(
+                buildConfig,
+                ModStatusKit.connected(buildConfig, buildMismatchServer)
+        );
+        assertEquals(StatusTone.GREEN, buildMismatchDisplay.tone(), "build mismatch never becomes red");
+        assertEquals("server456", buildMismatchDisplay.serverBuild(), "server build still exposed");
+
+        assertEquals(StatusTone.ORANGE, VersionStatus.DIFFERENT.tone(), "enum tone remains passive orange");
+    }
+
     private static void testVersionPayloadHelpers() {
         byte[] payload = ModStatusVersionPayload.encodeServerVersion(" 1.2.3 ");
         assertEquals("1.2.3", ModStatusVersionPayload.decodeServerVersion(payload), "decoded server version");
@@ -231,6 +297,73 @@ public final class ModStatusKitTest {
         assertThrows(NullPointerException.class, () -> ModStatusVersionPayload.decodeServerVersion(null), "null decode");
     }
 
+    private static void testStructuredStatusPayloadHelpers() {
+        byte[] warnPayload = ModStatusVersionPayload.encodeServerStatus(
+                "1.2.3",
+                "server123",
+                VersionMismatchSeverity.WARN
+        );
+        ModStatusServerStatus warnStatus = ModStatusVersionPayload.decodeServerStatus(warnPayload);
+        assertEquals("1.2.3", warnStatus.serverVersion(), "structured warn base version");
+        assertEquals("server123", warnStatus.serverBuild(), "structured warn build");
+        assertEquals(VersionMismatchSeverity.WARN, warnStatus.versionMismatchSeverity(), "structured warn severity");
+        assertEquals("1.2.3+server123", ModStatusVersionPayload.decodeServerVersion(warnPayload), "structured legacy version decode");
+
+        byte[] breakingPayload = ModStatusVersionPayload.encodeServerStatus(
+                "1.2.4",
+                null,
+                VersionMismatchSeverity.BREAKING
+        );
+        ModStatusServerStatus breakingStatus = ModStatusVersionPayload.decodeServerStatus(breakingPayload);
+        assertEquals("1.2.4", breakingStatus.serverVersion(), "structured breaking base version");
+        assertEquals(null, breakingStatus.serverBuild(), "structured breaking build absent");
+        assertEquals(VersionMismatchSeverity.BREAKING, breakingStatus.versionMismatchSeverity(), "structured breaking severity");
+
+        ModStatusServerStatus legacyPlain = ModStatusVersionPayload.decodeServerStatus(
+                ModStatusVersionPayload.encodeServerVersion("1.2.5")
+        );
+        assertEquals("1.2.5", legacyPlain.serverVersion(), "legacy plain server version");
+        assertEquals(null, legacyPlain.serverBuild(), "legacy plain build absent");
+        assertEquals(VersionMismatchSeverity.WARN, legacyPlain.versionMismatchSeverity(), "legacy plain defaults warn");
+
+        ModStatusServerStatus legacyBuild = ModStatusVersionPayload.decodeServerStatus(
+                ModStatusVersionPayload.encodeServerVersion("1.2.5+abc1234")
+        );
+        assertEquals("1.2.5", legacyBuild.serverVersion(), "legacy build base version");
+        assertEquals("abc1234", legacyBuild.serverBuild(), "legacy build metadata");
+        assertEquals(VersionMismatchSeverity.WARN, legacyBuild.versionMismatchSeverity(), "legacy build defaults warn");
+
+        String unknownSeverityPayload = "MSK2\nversion=2.0.0\nversionMismatchSeverity=LOUD\n";
+        ModStatusServerStatus unknownSeverity = ModStatusVersionPayload.decodeServerStatus(
+                unknownSeverityPayload.getBytes(java.nio.charset.StandardCharsets.UTF_8)
+        );
+        assertEquals(VersionMismatchSeverity.WARN, unknownSeverity.versionMismatchSeverity(), "unknown severity defaults warn");
+
+        String crlfPayload = "MSK2\r\nversion=2.0.1\r\nbuild=server789\r\nversionMismatchSeverity=BREAKING\r\n";
+        ModStatusServerStatus crlfStatus = ModStatusVersionPayload.decodeServerStatus(
+                crlfPayload.getBytes(java.nio.charset.StandardCharsets.UTF_8)
+        );
+        assertEquals("2.0.1", crlfStatus.serverVersion(), "structured crlf base version");
+        assertEquals("server789", crlfStatus.serverBuild(), "structured crlf build");
+        assertEquals(VersionMismatchSeverity.BREAKING, crlfStatus.versionMismatchSeverity(), "structured crlf severity");
+
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> ModStatusVersionPayload.decodeServerStatus("MSK2\nversion=\n".getBytes(java.nio.charset.StandardCharsets.UTF_8)),
+                "structured version rejects blank decode"
+        );
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> ModStatusVersionPayload.encodeServerStatus("1.2.3\nbad", null, VersionMismatchSeverity.WARN),
+                "structured version rejects newline"
+        );
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> ModStatusVersionPayload.encodeServerStatus("1.2.3", "bad\nbuild", VersionMismatchSeverity.WARN),
+                "structured build rejects newline"
+        );
+    }
+
     private static void testVersionPayloadSendIfSupported() {
         ModStatusConfig config = exampleConfig();
         RecordingPayloadSender sender = new RecordingPayloadSender();
@@ -258,6 +391,27 @@ public final class ModStatusKitTest {
         assertEquals(true, sent, "send build metadata supported result");
         assertEquals("examplemod:server_version", sender.channel, "sent build metadata channel");
         assertEquals("0.4.0+server456", ModStatusVersionPayload.decodeServerVersion(sender.payload), "sent build metadata payload");
+
+        ModStatusConfig breakingConfig = ModStatusConfig.builder()
+                .modId("examplemod")
+                .displayName("Example Mod")
+                .clientVersion("0.4.0")
+                .clientBuild("server456")
+                .payloadChannel("examplemod", "server_version")
+                .build();
+        sender = new RecordingPayloadSender();
+        sent = ModStatusVersionPayload.sendServerStatusIfSupported(
+                breakingConfig,
+                VersionMismatchSeverity.BREAKING,
+                channel -> true,
+                sender
+        );
+        assertEquals(true, sent, "send structured status supported result");
+        assertEquals("examplemod:server_version", sender.channel, "sent structured status channel");
+        ModStatusServerStatus sentStatus = ModStatusVersionPayload.decodeServerStatus(sender.payload);
+        assertEquals("0.4.0", sentStatus.serverVersion(), "sent structured status version");
+        assertEquals("server456", sentStatus.serverBuild(), "sent structured status build");
+        assertEquals(VersionMismatchSeverity.BREAKING, sentStatus.versionMismatchSeverity(), "sent structured status severity");
     }
 
     private static void testCustomMessages() {
@@ -284,7 +438,7 @@ public final class ModStatusKitTest {
         ModStatusConfig config = exampleConfig();
 
         assertThrows(IllegalArgumentException.class, () -> ModStatusKit.connected(config, ""), "blank server version");
-        assertThrows(NullPointerException.class, () -> ModStatusKit.connected(config, null), "null server version");
+        assertThrows(NullPointerException.class, () -> ModStatusKit.connected(config, (String) null), "null server version");
     }
 
     private static void assertDisplay(
