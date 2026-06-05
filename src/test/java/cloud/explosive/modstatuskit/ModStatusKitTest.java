@@ -190,7 +190,13 @@ public final class ModStatusKitTest {
         assertEquals("client123", display.clientBuild(), "display client build");
         assertEquals("0.4.0", display.serverVersion(), "display server base version");
         assertEquals("server456", display.serverBuild(), "display server build");
-        assertEquals(StatusTone.GREEN, display.tone(), "build mismatch is diagnostic only");
+        assertEquals(StatusTone.TEAL, display.tone(), "build mismatch uses diagnostic tone");
+
+        ModStatusDisplay equalBuildDisplay = ModStatusKit.display(
+                inlineConfig,
+                ModStatusKit.connected(inlineConfig, "0.4.0+client123")
+        );
+        assertEquals(StatusTone.GREEN, equalBuildDisplay.tone(), "equal build metadata stays matched green");
 
         ModStatusConfig explicitConfig = ModStatusConfig.builder()
                 .modId("examplemod")
@@ -200,6 +206,18 @@ public final class ModStatusKitTest {
                 .payloadChannel("examplemod", "server_version")
                 .build();
         assertEquals("explicit789", explicitConfig.clientBuild(), "explicit client build wins");
+
+        ModStatusConfig missingBuildConfig = ModStatusConfig.builder()
+                .modId("examplemod")
+                .displayName("Example Mod")
+                .clientVersion("0.4.0")
+                .payloadChannel("examplemod", "server_version")
+                .build();
+        ModStatusDisplay missingBuildDisplay = ModStatusKit.display(
+                missingBuildConfig,
+                ModStatusKit.connected(missingBuildConfig, "0.4.0")
+        );
+        assertEquals(StatusTone.GREEN, missingBuildDisplay.tone(), "absent build metadata stays matched green");
     }
 
     private static void testVersionMismatchSeverityStatusAndDisplay() {
@@ -255,7 +273,7 @@ public final class ModStatusKitTest {
                 buildConfig,
                 ModStatusKit.connected(buildConfig, buildMismatchServer)
         );
-        assertEquals(StatusTone.GREEN, buildMismatchDisplay.tone(), "build mismatch never becomes red");
+        assertEquals(StatusTone.TEAL, buildMismatchDisplay.tone(), "build mismatch never becomes red");
         assertEquals("server456", buildMismatchDisplay.serverBuild(), "server build still exposed");
 
         assertEquals(StatusTone.ORANGE, VersionStatus.DIFFERENT.tone(), "enum tone remains passive orange");

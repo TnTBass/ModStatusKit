@@ -219,7 +219,7 @@ String updateUrl = display.updateUrl();
 
 Show the base version as the primary version. Build metadata should be optional diagnostic detail, for example `build abc1234` next to the primary version or a compact support string such as `0.1.3+abc1234`. If build metadata is missing, do not show placeholder text such as `unknown build`. If the generated fallback is a local sentinel such as `dev`, hide it in normal player-facing UI unless the consuming mod deliberately wants to expose that.
 
-For color, keep build mismatch less alarming than a version mismatch. ModStatusKit returns the normal matched tone when base versions match, even if both sides report different builds. A consuming UI can still choose a blue or teal diagnostic accent when `display.clientBuild()` and `display.serverBuild()` are both present and different. That reads as "different build, probably fine" instead of "version problem." Missing build metadata should not change the matched color.
+For color, keep build mismatch less alarming than a version mismatch. ModStatusKit keeps the status matched when base versions match, but `ModStatusDisplay.tone()` returns `StatusTone.TEAL` when both sides report different builds. That reads as "different build, probably fine" instead of "version problem." Missing or equal build metadata stays green.
 
 Recommended colors:
 
@@ -236,7 +236,7 @@ The consuming mod decides where this appears. A common choice is a ModMenu/confi
 ModStatusKit models these informational states:
 
 - `Matched`: client and server versions are the same; display green.
-- matched base version with different reported builds: optional blue or teal diagnostic accent in the consuming mod UI.
+- matched base version with different reported builds: display teal from `ModStatusDisplay.tone()`.
 - `Different versions`: client and server versions differ; display orange.
 - public/base version mismatch marked as `VersionMismatchSeverity.BREAKING` by the server: display red.
 - `Disconnected`: the client is not connected to a server or world; display gray.

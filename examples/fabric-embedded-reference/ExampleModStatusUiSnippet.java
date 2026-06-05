@@ -65,21 +65,13 @@ public final class ExampleModStatusUiSnippet implements ModMenuApi {
     }
 
     private static int statusColorFor(ModStatusDisplay display) {
-        if (display.tone() == StatusTone.GREEN && hasBuildMismatch(display)) {
-            return 0x33D6D6;
-        }
         return colorFor(display.tone());
-    }
-
-    private static boolean hasBuildMismatch(ModStatusDisplay display) {
-        String clientBuild = display.clientBuild();
-        String serverBuild = display.serverBuild();
-        return clientBuild != null && serverBuild != null && !clientBuild.equals(serverBuild);
     }
 
     private static int colorFor(StatusTone tone) {
         return switch (tone) {
             case GREEN -> 0x55FF55;
+            case TEAL -> 0x33D6D6;
             case ORANGE -> 0xFFAA00;
             case RED -> 0xFF5555;
             case GRAY -> 0xAAAAAA;

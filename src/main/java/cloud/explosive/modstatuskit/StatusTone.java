@@ -5,6 +5,7 @@ package cloud.explosive.modstatuskit;
  */
 public enum StatusTone {
     GREEN,
+    TEAL,
     ORANGE,
     RED,
     GRAY

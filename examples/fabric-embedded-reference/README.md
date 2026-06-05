@@ -34,7 +34,7 @@ The `BuildInfo.java` file in this reference is a placeholder for generated consu
 
 Render the base version as the primary player-facing version. Show build metadata only as optional diagnostic detail, such as `build abc1234` or `1.2.3+abc1234`. If the build value is missing, do not show placeholder text. If a local fallback such as `dev` is generated, hide it in normal player-facing UI unless you deliberately want to expose local build labels.
 
-For color, keep a build mismatch quieter than a version mismatch.
+For color, keep a build mismatch quieter than a version mismatch. The reference UI maps `StatusTone.TEAL` to a blue/teal diagnostic accent from `ModStatusDisplay.tone()`.
 
 Recommended colors:
 
